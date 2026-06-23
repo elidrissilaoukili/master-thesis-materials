@@ -1,0 +1,115 @@
+{
+  "experiment": "weight_sharing_tying",
+  "method": "weight_sharing",
+  "variant": "CrossLayerWeightTying",
+  "original_arch": "resnet50",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "finetune_epochs": 5,
+  "finetune_lr": 0.001,
+  "method_description": "Cross-layer weight tying: within each ResNet stage (layer1\u20134), all 3\u00d73 conv2 layers across bottleneck blocks share one nn.Parameter (average-initialised). BN layers, conv1 (1\u00d71), conv3 (1\u00d71), and downsample projections remain independent per block. Vision analogue of NLP embedding-output weight tying.",
+  "tying_info": {
+    "layer1": {
+      "num_blocks_tied": 3,
+      "weight_shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "params_per_copy": 36864,
+      "params_saved": 73728,
+      "reduction_pct": 66.67
+    },
+    "layer2": {
+      "num_blocks_tied": 4,
+      "weight_shape": [
+        128,
+        128,
+        3,
+        3
+      ],
+      "params_per_copy": 147456,
+      "params_saved": 442368,
+      "reduction_pct": 75.0
+    },
+    "layer3": {
+      "num_blocks_tied": 6,
+      "weight_shape": [
+        256,
+        256,
+        3,
+        3
+      ],
+      "params_per_copy": 589824,
+      "params_saved": 2949120,
+      "reduction_pct": 83.33
+    },
+    "layer4": {
+      "num_blocks_tied": 3,
+      "weight_shape": [
+        512,
+        512,
+        3,
+        3
+      ],
+      "params_per_copy": 2359296,
+      "params_saved": 4718592,
+      "reduction_pct": 66.67
+    },
+    "total_params_saved": 8183808
+  },
+  "compression_time_s": 0.04,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    }
+  },
+  "original_size_mb": 90.0294,
+  "original_params": 23520842,
+  "pre_finetune_accuracy": 0.1136,
+  "accuracy": 0.908,
+  "precision": 0.908229,
+  "recall": 0.908,
+  "f1": 0.907827,
+  "accuracy_drop": 0.024,
+  "finetune_epoch_accs": [
+    0.83374,
+    0.88914,
+    0.90828,
+    0.9232,
+    0.93394
+  ],
+  "params": 15337034,
+  "param_reduction_pct": 34.79,
+  "size_mb": 58.8083,
+  "compression_ratio": 1.5309,
+  "flops_G": 2.59566,
+  "inference_ms": {
+    "single_img_gpu_ms": 4.4024,
+    "batch128_gpu_ms": 51.1669,
+    "per_img_gpu_ms": 0.399741,
+    "throughput_imgs_sec": 2501.62,
+    "timing_method": "CUDA events + torch.cuda.synchronize()"
+  },
+  "saved_model_path": "e:\\baseline_resnet50_cifar10\\5__v2__Weight Sharing & Tying\\__1__cross_layer_weight_tying.pth",
+  "status": "ok"
+}

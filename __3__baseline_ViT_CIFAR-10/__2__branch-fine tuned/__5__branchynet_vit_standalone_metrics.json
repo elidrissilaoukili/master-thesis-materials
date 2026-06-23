@@ -1,0 +1,125 @@
+{
+  "model": "branchyvit_small_patch4_32",
+  "method": "early_exit",
+  "variant": "BranchyViT_Small",
+  "dataset": "CIFAR-10",
+  "accuracy": 0.9715,
+  "precision": 0.971497,
+  "recall": 0.9715,
+  "f1": 0.971488,
+  "params": 21445022,
+  "size_mb": 81.867,
+  "flops_G": 2.762945,
+  "input_resolution": 32,
+  "patch_size": 4,
+  "num_patches": 64,
+  "inference_ms": {
+    "gpu": {
+      "single_img_ms": 4.9834,
+      "batch128_ms": 54.2546,
+      "per_img_ms": 0.4239,
+      "throughput_imgs_sec": 2359.2,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "num_exits": 3,
+  "exit_positions": [
+    "after block 3 of 11 (~33% depth)",
+    "after block 7 of 11 (~67% depth)",
+    "final head (full depth)"
+  ],
+  "branch_weights": [
+    0.2,
+    0.3,
+    0.5
+  ],
+  "exit_thresholds_tested": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "inference_ms_adaptive_tau08": 2.6191,
+  "adaptive_threshold_results": [
+    {
+      "threshold": 0.5,
+      "accuracy": 0.9314,
+      "precision": 0.931339,
+      "recall": 0.9314,
+      "f1": 0.931314,
+      "frac_exit1": 0.9248,
+      "frac_exit2": 0.0655,
+      "frac_exit3": 0.0097,
+      "avg_time_ms": 0.2833
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.9433,
+      "precision": 0.943203,
+      "recall": 0.9433,
+      "f1": 0.943223,
+      "frac_exit1": 0.878,
+      "frac_exit2": 0.1019,
+      "frac_exit3": 0.0201,
+      "avg_time_ms": 0.288
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.9544,
+      "precision": 0.954328,
+      "recall": 0.9544,
+      "f1": 0.954338,
+      "frac_exit1": 0.8241,
+      "frac_exit2": 0.1398,
+      "frac_exit3": 0.0361,
+      "avg_time_ms": 0.2967
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.9629,
+      "precision": 0.962827,
+      "recall": 0.9629,
+      "f1": 0.962847,
+      "frac_exit1": 0.7413,
+      "frac_exit2": 0.1881,
+      "frac_exit3": 0.0706,
+      "avg_time_ms": 0.3083
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.9693,
+      "precision": 0.96929,
+      "recall": 0.9693,
+      "f1": 0.96928,
+      "frac_exit1": 0.5445,
+      "frac_exit2": 0.2781,
+      "frac_exit3": 0.1774,
+      "avg_time_ms": 0.3461
+    },
+    {
+      "threshold": 0.95,
+      "accuracy": 0.9712,
+      "precision": 0.971197,
+      "recall": 0.9712,
+      "f1": 0.971187,
+      "frac_exit1": 0.1339,
+      "frac_exit2": 0.0064,
+      "frac_exit3": 0.8597,
+      "avg_time_ms": 0.4976
+    }
+  ],
+  "best_adaptive_result": {
+    "threshold": 0.95,
+    "accuracy": 0.9712,
+    "precision": 0.971197,
+    "recall": 0.9712,
+    "f1": 0.971187,
+    "frac_exit1": 0.1339,
+    "frac_exit2": 0.0064,
+    "frac_exit3": 0.8597,
+    "avg_time_ms": 0.4976
+  },
+  "saved_model_path": "e:\\baseline_ViT\\__2__branch-fine tuned\\__5__branchynet_vit_cifar10.pth"
+}

@@ -1,0 +1,60 @@
+{
+  "method": "flash_attention",
+  "description": "Flash Attention applied to the ViT-CIFAR10 baseline. Standard MultiHeadSelfAttention replaced with torch.nn.functional.scaled_dot_product_attention. Weights loaded from the trained baseline \u2014 no retraining.",
+  "sdpa_backend": "FlashAttention-2 (sm120, Ampere+)",
+  "pytorch_version": "2.12.0.dev20260408+cu128",
+  "device": "cuda",
+  "numerical_check": {
+    "max_diff": 1.67e-06,
+    "mean_diff": 3.3e-07,
+    "equivalent": true
+  },
+  "standard_attention": {
+    "accuracy": 0.8221,
+    "precision": 0.820659,
+    "recall": 0.8221,
+    "f1": 0.820828,
+    "params": 12470026,
+    "inference": {
+      "single_img_ms": 3.4129,
+      "batch128_ms": 32.7098,
+      "per_img_ms": 0.255545,
+      "throughput_imgs_sec": 3913.2,
+      "timing_method": "CUDA events"
+    },
+    "memory": {
+      "peak_vram_mb": 417.65
+    }
+  },
+  "flash_attention": {
+    "accuracy": 0.8221,
+    "precision": 0.820659,
+    "recall": 0.8221,
+    "f1": 0.820828,
+    "params": 12470026,
+    "inference": {
+      "single_img_ms": 2.6209,
+      "batch128_ms": 31.5057,
+      "per_img_ms": 0.246139,
+      "throughput_imgs_sec": 4062.75,
+      "timing_method": "CUDA events"
+    },
+    "memory": {
+      "peak_vram_mb": 417.65
+    }
+  },
+  "comparison": {
+    "accuracy_diff": 0.0,
+    "speedup_single": 1.3022,
+    "speedup_batch": 1.0382,
+    "vram_reduction_pct": null
+  },
+  "notes": {
+    "weight_reuse": "Baseline weights transplanted \u2014 no retraining needed.",
+    "kernel": "SDPA auto-selects: FlashAttn-2 > MemEfficient > Math.",
+    "equivalence": "Mathematically identical to standard attention.",
+    "no_n2_matrix": "Flash does not materialise the full N\u00d7N attention matrix.",
+    "sequence_len": "N=65 tokens (64 patches + 1 CLS).",
+    "memory_savings": "More pronounced at larger N; modest at N=65."
+  }
+}

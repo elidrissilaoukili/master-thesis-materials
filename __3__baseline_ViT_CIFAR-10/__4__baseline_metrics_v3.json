@@ -1,0 +1,29 @@
+{
+  "model": "vit_small_patch4_32_pretrained",
+  "accuracy": 0.9666,
+  "precision": 0.9666565933683346,
+  "recall": 0.9666,
+  "f1": 0.9666162242879113,
+  "params": 21342346,
+  "size_mb": 85.433077,
+  "flops_G": 2.762743296,
+  "input_resolution": 32,
+  "patch_size": 4,
+  "num_patches": 64,
+  "inference_ms": {
+    "cpu": {
+      "single_img_ms": 10.4093,
+      "batch128_ms": 651.2059,
+      "per_img_ms": 5.0875,
+      "throughput_imgs_sec": 196.6,
+      "timing_method": "time.perf_counter()"
+    },
+    "gpu": {
+      "single_img_ms": 4.3041,
+      "batch128_ms": 54.0882,
+      "per_img_ms": 0.4226,
+      "throughput_imgs_sec": 2366.5,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  }
+}

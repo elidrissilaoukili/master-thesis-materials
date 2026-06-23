@@ -1,0 +1,126 @@
+{
+  "_meta": {
+    "framework": "PFE Pruning Experiments v3",
+    "baseline_pth": "../__2__baseline_resnet50_cifar10.pth",
+    "sparsity_target": 0.5,
+    "channel_prune_ratio": 0.3,
+    "device": "cuda",
+    "seed": 42,
+    "lth_train_epochs": 30,
+    "lth_retrain_epochs": 30,
+    "taxonomy": {
+      "mask_based": [
+        "1_unstructured",
+        "3_magnitude",
+        "4_movement",
+        "6_iterative",
+        "7_one_shot"
+      ],
+      "architecture_changing": [
+        "2_structured"
+      ],
+      "rewind_based": [
+        "5_lottery_ticket"
+      ]
+    },
+    "flops_interpretation": "Mask-based: dense FLOPs unchanged (graph unmodified). Effective FLOPs depend on sparse-backend support. Structured (#2): GFLOPs genuinely reduced \u2014 measured on rebuilt model. Comparison across types is NOT apples-to-apples for FLOPs; this is disclosed in the taxonomy.",
+    "structured_pruning_safety": "Only internal Bottleneck width (conv1\u2192conv2) is pruned. conv3, bn3, and downsample paths are untouched, guaranteeing residual-addition shape safety in all blocks.",
+    "movement_pruning_method": "Importance = (1/N) \u03a3 |\u2202L/\u2202w \u00d7 w|  over N batches. Normalized to remove large-tensor bias. Ref: Molchanov et al. 2017.",
+    "lth_protocol": "\u03b8\u2080 saved at SEED=42 before training. \u03b8_T = result of training \u03b8\u2080 in this script (same trajectory). Mask from global magnitude pruning of \u03b8_T. Ticket = m \u2299 \u03b8\u2080 retrained with frozen mask. Ref: Frankle & Carlin 2019."
+  },
+  "results": {
+    "1_unstructured": {
+      "accuracy": 0.932,
+      "precision": 0.9318602516928074,
+      "recall": 0.9319999999999998,
+      "f1": 0.9318784125744781,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 6.6138490041097,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse)."
+    },
+    "2_structured": {
+      "accuracy": 0.9312,
+      "precision": 0.9311722924893022,
+      "recall": 0.9312000000000001,
+      "f1": 0.9310798243234443,
+      "params_total": 18807394,
+      "params_nonzero": 18807394,
+      "sparsity_actual": 0.0,
+      "size_mb": 75.523059,
+      "flops_G": 2.068770816,
+      "inference_ms": 5.073384443918863,
+      "flops_note": "TRUE structured pruning: 30% of internal Bottleneck channels physically removed (conv1+bn1+conv2 per block). conv3, bn3, and downsample are untouched \u2014 residual shapes guaranteed valid. GFLOPs are genuinely reduced and measured by thop on the rebuilt model."
+    },
+    "3_magnitude": {
+      "accuracy": 0.9318,
+      "precision": 0.931472632848388,
+      "recall": 0.9318,
+      "f1": 0.9315545218036515,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 5.767982006072998,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse)."
+    },
+    "4_movement": {
+      "accuracy": 0.8919,
+      "precision": 0.8972215483616995,
+      "recall": 0.8919,
+      "f1": 0.8928386345990902,
+      "params_total": 23520842,
+      "params_nonzero": 11601346,
+      "sparsity_actual": 0.5067631507409471,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 5.784204006195068,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse).",
+      "movement_note": "Importance = |grad\u00d7weight| / n_batches (normalized Taylor 1st-order). Single full-epoch accumulation over the training set."
+    },
+    "5_lottery_ticket": {
+      "accuracy": 0.9334,
+      "precision": 0.9332086742724565,
+      "recall": 0.9334000000000001,
+      "f1": 0.9331935949238078,
+      "params_total": 23520842,
+      "params_nonzero": 11786985,
+      "sparsity_actual": 0.49887061866237614,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.426754315694173,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse).",
+      "lth_note": "Correct LTH protocol (Frankle & Carlin 2019). \u03b8\u2080 saved at SEED=42 before any training. \u03b8_T obtained by training \u03b8\u2080 for 30 epochs in this run. Global magnitude mask at 50% sparsity applied to \u03b8_T. Winning ticket = m \u2299 \u03b8\u2080 retrained for 30 epochs with mask enforced after every gradient step."
+    },
+    "6_iterative": {
+      "accuracy": 0.932,
+      "precision": 0.9319746720375152,
+      "recall": 0.9319999999999998,
+      "f1": 0.931935267616382,
+      "params_total": 23520842,
+      "params_nonzero": 19671907,
+      "sparsity_actual": 0.16363933740127157,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.522400697072347,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse)."
+    },
+    "7_one_shot": {
+      "accuracy": 0.932,
+      "precision": 0.9318602516928074,
+      "recall": 0.9319999999999998,
+      "f1": 0.9318784125744781,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 5.840433438618978,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse)."
+    }
+  }
+}

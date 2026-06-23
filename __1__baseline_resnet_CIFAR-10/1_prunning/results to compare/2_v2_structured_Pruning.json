@@ -1,0 +1,56 @@
+{
+  "method": "structured_pruning",
+  "description": "L1 structured filter pruning \u2014 entire Conv2d output filters removed",
+  "pruning_granularity": "filter (output channel, dim=0)",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "baseline_size_breakdown": {
+    "dense_ram_mb": 89.7249,
+    "disk_pth_mb": 90.0294
+  },
+  "pruning_criterion": "L1 norm of filter (sum of |w| per output filter)",
+  "device": "cuda",
+  "max_acc_drop_threshold": 0.02,
+  "best_ratio": 0.1,
+  "baseline_flops": 2623188992,
+  "results": [
+    {
+      "filter_pruning_ratio": 0.1,
+      "structured_sparsity": 0.099,
+      "weight_sparsity": 0.0989,
+      "accuracy": 0.9322,
+      "precision": 0.932111,
+      "recall": 0.9322,
+      "f1": 0.932104,
+      "accuracy_drop": -0.0002,
+      "params_total": 23520842,
+      "params_active": 21200808,
+      "size_dense_mb": 89.7249,
+      "size_sparse_theoretical_mb": 80.8747,
+      "size_disk_mb": 90.0395,
+      "disk_saved_mb": -0.0101,
+      "inference_gpu_ms": 51.0612,
+      "inference_cpu_ms": 3125.3126,
+      "flops_total": 2623188992,
+      "flops_active": 2623188992,
+      "flops_reduction_pct": 0.0
+    }
+  ],
+  "notes": {
+    "structured_sparsity": "Fraction of zero-norm filters in Conv2d layers",
+    "weight_sparsity": "Fraction of zero weight values (all weights in zero filters)",
+    "real_speedup": "Structured pruning CAN yield real speedup after model rebuild \u2014 zero-row Conv ops are skipped by cuDNN. PyTorch's prune API zeroes rows but keeps tensor shapes; rebuild for actual FLOP reduction.",
+    "size_note": "Disk size compresses well due to zero-filter rows",
+    "flops_total": "Dense FLOPs \u2014 2*Cin*Cout*kH*kW*oH*oW per conv layer",
+    "flops_active": "FLOPs * density \u2014 theoretical sparse compute savings"
+  }
+}

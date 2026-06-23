@@ -1,0 +1,55 @@
+{
+  "method": "unstructured_pruning",
+  "description": "Global L1 unstructured pruning \u2014 individual weights zeroed",
+  "pruning_granularity": "weight",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "baseline_size_breakdown": {
+    "dense_ram_mb": 89.7249,
+    "disk_pth_mb": 90.0294
+  },
+  "pruning_criterion": "L1 magnitude (|w|)",
+  "device": "cuda",
+  "max_acc_drop_threshold": 0.02,
+  "best_sparsity": 0.3,
+  "baseline_flops": 2623188992,
+  "results": [
+    {
+      "target_sparsity": 0.3,
+      "actual_sparsity": 0.3,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "accuracy_drop": -0.0001,
+      "params_total": 23520842,
+      "params_active": 16480528,
+      "size_dense_mb": 89.7249,
+      "size_sparse_theoretical_mb": 62.8682,
+      "size_disk_mb": 90.0395,
+      "disk_saved_mb": -0.0101,
+      "inference_gpu_ms": 143.8803,
+      "inference_cpu_ms": 4356.0855,
+      "flops_total": 2623188992,
+      "flops_active": 2623188992,
+      "flops_reduction_pct": 0.0
+    }
+  ],
+  "notes": {
+    "size_dense_mb": "Full float32 RAM \u2014 never shrinks",
+    "size_sparse_theoretical_mb": "active_params * 4B \u2014 sparse format lower bound",
+    "size_disk_mb": "Actual .pth (compressed zip)",
+    "gpu_speedup": "Dense CUDA does NOT skip zeros \u2014 no GPU speedup without cuSPARSE",
+    "flops_total": "Dense FLOPs \u2014 2*Cin*Cout*kH*kW*oH*oW per conv layer",
+    "flops_active": "FLOPs * density \u2014 theoretical sparse compute savings"
+  }
+}

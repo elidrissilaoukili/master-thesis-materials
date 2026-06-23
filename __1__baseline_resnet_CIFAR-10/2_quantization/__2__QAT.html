@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTQ Quantization Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg2: #f7f8fa;
+      --bg3: #f0f2f5;
+      --border: #e4e7ed;
+      --border2: #d1d5de;
+      --text: #111318;
+      --text2: #5a6378;
+      --text3: #9ba3b5;
+      --accent: #0a7c52;
+      --accent2: #0d9463;
+      --danger: #c0152a;
+      --warn: #b45c00;
+      --blue: #1a56c4;
+      --purple: #6d3fc4;
+      --mono: 'DM Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+    /* Header */
+    .header { padding: 32px 32px 0; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #f0f2f5 0%, var(--bg) 100%); }
+    .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+    .header-title { display: flex; align-items: center; gap: 12px; }
+    .title-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .title-icon svg { width: 18px; height: 18px; fill: #fff; }
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+    .subtitle { font-size: 12px; color: var(--text2); font-family: var(--mono); margin-top: 2px; }
+    .baseline-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+    .bpill { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 6px 12px; font-family: var(--mono); font-size: 11px; }
+    .bpill-label { color: var(--text3); }
+    .bpill-val { color: var(--text); font-weight: 500; }
+
+    /* Nav */
+    .nav { display: flex; gap: 0; margin-top: 16px; overflow-x: auto; }
+    .nav-tab { padding: 10px 18px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s; letter-spacing: .02em; background: none; border-top: none; border-left: none; border-right: none; }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+    /* Main */
+    .main { padding: 24px 32px; }
+
+    /* Summary cards */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .summary-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .card-label { font-size: 10px; color: var(--text3); font-family: var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+    .card-val { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+    .card-sub { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead { position: sticky; top: 0; z-index: 5; }
+    th { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--text3); text-align: left; padding: 9px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); white-space: nowrap; letter-spacing: .06em; text-transform: uppercase; user-select: none; }
+    td { padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr.data-row:hover td { background: #f3f5f9; }
+    tr.baseline-row td { background: #eef6f2; }
+    tr.best-row td { background: rgba(26,86,196,.04) !important; }
+
+    /* Cell types */
+    .cell-mono { font-family: var(--mono); }
+    .cell-num { font-family: var(--mono); text-align: right; }
+    .cell-gain { color: var(--accent); font-family: var(--mono); }
+    .cell-loss { color: var(--danger); font-family: var(--mono); }
+    .cell-warn { color: var(--warn); font-family: var(--mono); }
+    .cell-dim { color: var(--text2); font-size: 11px; }
+
+    /* Pills */
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; font-family: var(--mono); letter-spacing: .03em; }
+    .pill-pass { background: rgba(10,124,82,.1); color: var(--accent); border: 1px solid rgba(10,124,82,.25); }
+    .pill-fail { background: rgba(192,21,42,.08); color: var(--danger); border: 1px solid rgba(192,21,42,.2); }
+    .pill-ref { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
+    .pill-blue { background: rgba(26,86,196,.08); color: var(--blue); border: 1px solid rgba(26,86,196,.2); }
+    .pill-purple { background: rgba(109,63,196,.08); color: var(--purple); border: 1px solid rgba(109,63,196,.2); }
+
+    /* Bar */
+    .bar-wrap { display: flex; align-items: center; gap: 6px; }
+    .bar-track { flex: 1; min-width: 48px; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+    .bar-pass { background: var(--accent); }
+    .bar-blue { background: var(--blue); }
+    .bar-val { font-family: var(--mono); font-size: 11px; color: var(--text2); min-width: 44px; text-align: right; }
+
+    /* Detail */
+    tr.detail-row td { padding: 0; border-bottom: 1px solid var(--border); }
+    .detail-panel { padding: 16px 20px; background: #f7f9fc; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .detail-item { display: flex; flex-direction: column; gap: 2px; }
+    .detail-key { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; }
+    .detail-val { font-family: var(--mono); font-size: 12px; color: var(--text); }
+    .detail-val.accent { color: var(--accent); }
+    .detail-val.danger { color: var(--danger); }
+    .detail-val.blue { color: var(--blue); }
+    .detail-val.warn { color: var(--warn); }
+
+    /* Math block */
+    .math-block { margin: 16px 0; padding: 14px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
+    .math-title { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+    .math-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+    .math-eq { font-family: var(--mono); font-size: 12px; color: var(--text); padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; }
+    .math-eq .lhs { color: var(--blue); }
+    .math-eq .rhs { color: var(--text2); }
+    .math-note { margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--text2); padding: 8px 10px; background: rgba(26,86,196,.04); border-left: 2px solid var(--blue); border-radius: 0 4px 4px 0; }
+
+    /* Expand btn */
+    .expand-btn { cursor: pointer; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); font-size: 10px; transition: all .15s; flex-shrink: 0; font-family: var(--mono); }
+    .expand-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .expand-btn.open { background: rgba(26,86,196,.08); border-color: var(--blue); color: var(--blue); }
+
+    /* Notes */
+    .notes-box { margin-top: 14px; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--text2); line-height: 1.8; }
+    .notes-title { color: var(--text3); text-transform: uppercase; letter-spacing: .06em; font-size: 9px; display: block; margin-bottom: 6px; }
+
+    /* Legend */
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text2); font-family: var(--mono); }
+    .leg { display: flex; align-items: center; gap: 5px; }
+    .leg-sq { width: 8px; height: 8px; border-radius: 2px; }
+
+    /* Speed chart */
+    .chart-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg2); margin-bottom: 20px; }
+    .chart-title { padding: 10px 16px 0; font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">
+      <div class="title-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 3h7v7H3zm0 11h7v7H3zm11-11h7v7h-7zm0 11h7v7h-7z"/></svg>
+      </div>
+      <div>
+        <h1>PTQ Quantization Benchmark</h1>
+        <div class="subtitle">ResNet-50 · CIFAR-10 · Post-Training Quantization · INT8 · CPU</div>
+      </div>
+    </div>
+    <div class="baseline-pills">
+      <div class="bpill"><span class="bpill-label">Baseline acc</span><span class="bpill-val">93.20%</span></div>
+      <div class="bpill"><span class="bpill-label">F1</span><span class="bpill-val">0.9319</span></div>
+      <div class="bpill"><span class="bpill-label">Params</span><span class="bpill-val">23.52M</span></div>
+      <div class="bpill"><span class="bpill-label">Size</span><span class="bpill-val">94.41 MB</span></div>
+      <div class="bpill"><span class="bpill-label">FLOPs</span><span class="bpill-val">1.311 G</span></div>
+      <div class="bpill"><span class="bpill-label">CPU Infer</span><span class="bpill-val">1431.5 ms</span></div>
+    </div>
+  </div>
+  <nav class="nav" id="mainNav">
+    <button class="nav-tab active" data-view="overview">Overview</button>
+    <button class="nav-tab" data-view="dynamic">Dynamic PTQ</button>
+    <button class="nav-tab" data-view="static">Static Eager</button>
+    <button class="nav-tab" data-view="fx">FX-Graph (oneDNN)</button>
+    <button class="nav-tab" data-view="math">Math & Theory</button>
+  </nav>
+</div>
+
+<div class="main">
+  <div id="view-content"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const BASELINE = {
+  accuracy: 0.932, precision: 0.9318626541334971,
+  recall: 0.9319999999999998, f1: 0.9318835910591599,
+  params: 23520842, size_mb: 94.408905,
+  flops_G: 1.311594496, inference_ms: 4.578483581542969,
+  inference_cpu_ms: 1431.5248
+};
+
+const RESULTS = [
+  {
+    id: 'dynamic',
+    backend: 'Dynamic PTQ',
+    observer: 'per_channel_affine (runtime)',
+    description: 'Only Linear weights quantized to qint8. Scale and zero-point computed on-the-fly per batch — no calibration data needed. Conv2d layers remain FP32.',
+    accuracy: 0.9319, precision: 0.931761, recall: 0.9319, f1: 0.931784,
+    accuracy_drop: 0.0001,
+    size_disk_mb: 89.9672, disk_saved_mb: 0.0579, compression_ratio: 1.0006,
+    inference_cpu_ms: 1461.343,
+    layers_quantized: 'Linear only',
+    calibration_samples: 0,
+    dtype_w: 'qint8', dtype_act: 'float32',
+    notes: 'No calibration required. Fastest to apply. Conv stays FP32 — minimal compression but zero setup overhead.'
+  },
+  {
+    id: 'static_minmax',
+    backend: 'Static Eager — MinMax',
+    observer: 'minmax',
+    description: 'Graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations both quantized to INT8.',
+    accuracy: 0.9329, precision: 0.932814, recall: 0.9329, f1: 0.932792,
+    accuracy_drop: -0.0009,
+    size_disk_mb: 22.9902, disk_saved_mb: 67.0349, compression_ratio: 3.9158,
+    inference_cpu_ms: 470.5378,
+    layers_quantized: 'Conv2d + Linear + residual adds',
+    calibration_samples: 1024,
+    dtype_w: 'qint8', dtype_act: 'quint8',
+    notes: 'Best accuracy (actually improves over baseline by 0.09%). Recommended default. MinMax observer captures true tensor range.'
+  },
+  {
+    id: 'static_mavg',
+    backend: 'Static Eager — MovingAvg',
+    observer: 'moving_avg',
+    description: 'Same as MinMax static but uses an exponential moving average observer to smooth out outlier activations over the calibration dataset.',
+    accuracy: 0.9316, precision: 0.931433, recall: 0.9316, f1: 0.931469,
+    accuracy_drop: 0.0004,
+    size_disk_mb: 22.9902, disk_saved_mb: 67.0349, compression_ratio: 3.9158,
+    inference_cpu_ms: 473.4993,
+    layers_quantized: 'Conv2d + Linear + residual adds',
+    calibration_samples: 1024,
+    dtype_w: 'qint8', dtype_act: 'quint8',
+    notes: 'Slightly lower accuracy than MinMax. The smoothing can hurt when activations have consistent peaks.'
+  },
+  {
+    id: 'static_hist',
+    backend: 'Static Eager — Histogram',
+    observer: 'histogram',
+    description: 'Uses histogram-based observer to find optimal clipping range, minimizing MSE between original and quantized distributions.',
+    accuracy: 0.9315, precision: 0.931404, recall: 0.9315, f1: 0.931391,
+    accuracy_drop: 0.0005,
+    size_disk_mb: 22.9902, disk_saved_mb: 67.0349, compression_ratio: 3.9158,
+    inference_cpu_ms: 455.6276,
+    layers_quantized: 'Conv2d + Linear + residual adds',
+    calibration_samples: 1024,
+    dtype_w: 'qint8', dtype_act: 'quint8',
+    notes: 'Fastest inference (455 ms) among static eager variants. Histogram clipping slightly clips tails, trading range for density.'
+  },
+  {
+    id: 'static_pct',
+    backend: 'Static Eager — Percentile',
+    observer: 'percentile',
+    description: 'Observer clips at a fixed percentile (e.g. 99.99th) rather than true min/max, reducing sensitivity to extreme outlier activations.',
+    accuracy: 0.9321, precision: 0.931998, recall: 0.9321, f1: 0.931982,
+    accuracy_drop: -0.0001,
+    size_disk_mb: 22.9902, disk_saved_mb: 67.0349, compression_ratio: 3.9158,
+    inference_cpu_ms: 483.3301,
+    layers_quantized: 'Conv2d + Linear + residual adds',
+    calibration_samples: 1024,
+    dtype_w: 'qint8', dtype_act: 'quint8',
+    notes: 'Marginally improves accuracy vs baseline. Good robustness to activation outliers. Slightly slower due to percentile computation.'
+  },
+  {
+    id: 'fx_onednn',
+    backend: 'FX-Graph — oneDNN',
+    observer: 'default_qconfig(onednn)',
+    description: 'torch.ao traces the full computation graph, automatically fuses Conv-BN-ReLU and quantizes all eligible ops including residual adds. Targets Intel oneDNN VNNI kernels.',
+    accuracy: 0.9315, precision: 0.931404, recall: 0.9315, f1: 0.931391,
+    accuracy_drop: 0.0005,
+    size_disk_mb: 22.9902, disk_saved_mb: 67.0349, compression_ratio: 3.9158,
+    inference_cpu_ms: 473.0227,
+    layers_quantized: 'Conv2d + Linear + residual adds (auto-fused)',
+    calibration_samples: 1024,
+    dtype_w: 'qint8', dtype_act: 'quint8',
+    notes: 'Automatic fusion via FX graph tracing. Broader op coverage than eager mode. On AVX-512 CPUs with VNNI, INT8 runs ~4× faster than FP32.'
+  }
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let openRows = new Set();
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+const fmt = {
+  pct: v => (v * 100).toFixed(2) + '%',
+  drop: v => { const s = v < 0 ? '' : (v === 0 ? '' : '+'); return s + v.toFixed(4); },
+  mb: v => v.toFixed(2),
+  ms: v => v.toFixed(1),
+  x: v => v.toFixed(2) + '×'
+};
+
+function dropClass(drop, thr = 0.02) {
+  if (drop < 0) return 'cell-gain';
+  if (drop > thr) return 'cell-loss';
+  if (drop > thr * 0.5) return 'cell-warn';
+  return 'cell-gain';
+}
+
+function passLabel(drop) {
+  return drop <= 0.02
+    ? '<span class="pill pill-pass">pass</span>'
+    : '<span class="pill pill-fail">fail</span>';
+}
+
+function speedBar(ms, max) {
+  const w = Math.round((ms / max) * 100);
+  const pass = ms < 600;
+  return `<div class="bar-wrap">
+    <div class="bar-track"><div class="bar-fill ${pass ? 'bar-pass' : 'bar-blue'}" style="width:${w}%"></div></div>
+    <span class="bar-val">${fmt.ms(ms)} ms</span>
+  </div>`;
+}
+
+function sizeBar(mb, max) {
+  const w = Math.round((mb / max) * 100);
+  return `<div class="bar-wrap">
+    <div class="bar-track"><div class="bar-fill bar-blue" style="width:${w}%"></div></div>
+    <span class="bar-val">${fmt.mb(mb)} MB</span>
+  </div>`;
+}
+
+// ── VIEWS ────────────────────────────────────────────────────────────────────
+function renderView(view) {
+  openRows.clear();
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  const el = document.getElementById('view-content');
+  switch (view) {
+    case 'overview':  el.innerHTML = buildOverview(); break;
+    case 'dynamic':   el.innerHTML = buildDynamic(); break;
+    case 'static':    el.innerHTML = buildStatic(); break;
+    case 'fx':        el.innerHTML = buildFX(); break;
+    case 'math':      el.innerHTML = buildMath(); break;
+  }
+}
+
+// ── OVERVIEW ─────────────────────────────────────────────────────────────────
+function buildOverview() {
+  const best = RESULTS[1]; // static_minmax
+  const speedup = (BASELINE.inference_cpu_ms / best.inference_cpu_ms).toFixed(2);
+
+  const cards = `<div class="summary-grid">
+    <div class="summary-card">
+      <div class="card-label">Backends Tested</div>
+      <div class="card-val" style="color:var(--blue)">3</div>
+      <div class="card-sub">dynamic · static eager · fx-graph</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Best Config</div>
+      <div class="card-val" style="color:var(--accent)">MinMax</div>
+      <div class="card-sub">static eager · +0.09% accuracy vs baseline</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Best Compression</div>
+      <div class="card-val" style="color:var(--accent)">3.92×</div>
+      <div class="card-sub">94.4 MB → 23.0 MB on disk</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">CPU Speedup</div>
+      <div class="card-val" style="color:var(--accent)">${speedup}×</div>
+      <div class="card-sub">1431 ms → 471 ms (static eager)</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Calibration Samples</div>
+      <div class="card-val" style="color:var(--blue)">1024</div>
+      <div class="card-sub">8 batches · static methods only</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Configs Passing</div>
+      <div class="card-val" style="color:var(--accent)">6 / 6</div>
+      <div class="card-sub">all variants ≤ 2% accuracy drop</div>
+    </div>
+  </div>`;
+
+  const rows = RESULTS.map(r => `<tr class="data-row${r.id === 'static_minmax' ? ' best-row' : ''}">
+    <td class="cell-mono" style="font-weight:600">${r.backend}${r.id === 'static_minmax' ? ' ★' : ''}</td>
+    <td class="cell-mono cell-dim">${r.observer}</td>
+    <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+    <td class="${dropClass(r.accuracy_drop)}">${fmt.drop(r.accuracy_drop)}</td>
+    <td class="cell-num cell-dim">${fmt.mb(r.size_disk_mb)} MB</td>
+    <td class="cell-num cell-dim">${fmt.x(r.compression_ratio)}</td>
+    <td class="cell-num cell-dim">${fmt.ms(r.inference_cpu_ms)} ms</td>
+    <td class="cell-mono cell-dim" style="font-size:10px">${r.layers_quantized}</td>
+    <td>${passLabel(r.accuracy_drop)}</td>
+  </tr>`).join('');
+
+  return cards + `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Backend</th><th>Observer</th><th>Accuracy</th><th>Acc Drop</th>
+      <th>Size (disk)</th><th>Compression</th><th>CPU Infer</th><th>Layers Quantized</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(9)}${rows}</tbody>
+  </table></div>
+  <div class="notes-box">
+    <span class="notes-title">Key Takeaways</span>
+    All static PTQ variants achieve 3.92× compression. Dynamic PTQ is nearly lossless but compresses only Linear layers (~0% disk savings). MinMax observer is the clear winner — it's the only variant that actually improves accuracy. INT8 on CPU with AVX-512 VNNI delivers ~3× wall-clock speedup. PTQ requires no retraining; QAT would be needed to close accuracy gaps at INT4.
+  </div>
+  ${buildLegend()}`;
+}
+
+// ── DYNAMIC ───────────────────────────────────────────────────────────────────
+function buildDynamic() {
+  const r = RESULTS[0];
+  return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${r.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Quantized layers: ${r.layers_quantized} · Calibration: none (scale computed at runtime)</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Backend</th><th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
+      <th>Acc Drop</th><th>Size (disk)</th><th>Saved</th><th>Compression</th><th>CPU Infer</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(12)}${buildSingleRow(r, 'dyn-0')}</tbody>
+  </table></div>
+  ${buildDetailExpand(r)}
+  <div class="notes-box">
+    <span class="notes-title">Notes</span>
+    ${r.notes}<br><br>
+    <span style="color:var(--text3)">Why minimal compression?</span> Only Linear layers are quantized — Conv2d (which holds the bulk of ResNet-50's weights) remains FP32. The .pth file barely shrinks (89.97 MB vs 90.03 MB baseline). For real compression, static PTQ is required.
+  </div>
+  ${buildLegend()}`;
+}
+
+// ── STATIC ────────────────────────────────────────────────────────────────────
+function buildStatic() {
+  const statics = RESULTS.filter(r => r.id.startsWith('static'));
+  const maxMs = Math.max(...statics.map(r => r.inference_cpu_ms));
+
+  const rows = statics.map((r, i) => {
+    const id = `static-${i}`;
+    return `
+    <tr class="data-row${r.id === 'static_minmax' ? ' best-row' : ''}" style="cursor:pointer" onclick="toggleDetail('${id}')">
+      <td><span class="expand-btn" id="btn-${id}">+</span></td>
+      <td class="cell-mono" style="font-weight:600">${r.observer}${r.id === 'static_minmax' ? ' ★' : ''}</td>
+      <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+      <td class="cell-num">${r.f1.toFixed(6)}</td>
+      <td class="cell-num">${r.precision.toFixed(6)}</td>
+      <td class="cell-num">${r.recall.toFixed(6)}</td>
+      <td class="${dropClass(r.accuracy_drop)}">${fmt.drop(r.accuracy_drop)}</td>
+      <td class="cell-num cell-dim">${fmt.mb(r.size_disk_mb)} MB</td>
+      <td class="cell-num cell-dim">${fmt.x(r.compression_ratio)}</td>
+      <td>${speedBar(r.inference_cpu_ms, maxMs)}</td>
+      <td>${passLabel(r.accuracy_drop)}</td>
+    </tr>
+    <tr class="detail-row" id="detail-${id}" style="display:none">
+      <td colspan="11">${buildFullDetail(r)}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">Static PTQ calibrates scale S and zero-point Z from 1024 training images. Quantizes both weights (qint8) and activations (quint8). Conv-BN-ReLU fused before quantization.</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">All 4 observers achieve identical compression (3.92×) and disk size (22.99 MB). Difference is accuracy and inference speed.</div>
+  </div>
+  ${buildSpeedChart(statics)}
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Observer</th><th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
+      <th>Acc Drop</th><th>Size (disk)</th><th>Compression</th><th>CPU Infer</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(11)}${rows}</tbody>
+  </table></div>
+  <div class="notes-box">
+    <span class="notes-title">Observer Comparison</span>
+    <span style="color:var(--text3)">minmax:</span> Captures exact [min, max] tensor range. Best for ResNet activations which have consistent distributions.<br>
+    <span style="color:var(--text3)">moving_avg:</span> EMA smoothing over calibration batches. Reduces outlier sensitivity but may underrepresent peaks.<br>
+    <span style="color:var(--text3)">histogram:</span> MSE-optimal clipping range. Fastest inference but clips distribution tails.<br>
+    <span style="color:var(--text3)">percentile:</span> Clips at fixed percentile. Robust to outliers; slightly slower due to sorting overhead.
+  </div>
+  ${buildLegend()}`;
+}
+
+// ── FX ────────────────────────────────────────────────────────────────────────
+function buildFX() {
+  const r = RESULTS[5];
+  return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${r.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Backend: oneDNN · Fusion: automatic via torch.fx graph tracing · VNNI INT8 throughput ~4× FP32 on AVX-512</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Backend</th><th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
+      <th>Acc Drop</th><th>Size (disk)</th><th>Compression</th><th>CPU Infer</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(11)}${buildSingleRow(r, 'fx-0', 11)}</tbody>
+  </table></div>
+  ${buildDetailExpand(r)}
+  <div class="notes-box">
+    <span class="notes-title">FX-Graph vs Eager Mode</span>
+    ${r.notes}<br><br>
+    <span style="color:var(--text3)">Limitation:</span> Model must be torch.fx-traceable (no Python control flow that depends on tensor values).<br>
+    <span style="color:var(--text3)">GPU note:</span> PyTorch static PTQ is CPU-only. For GPU INT8 inference, use TensorRT or ONNX Runtime.<br>
+    <span style="color:var(--text3)">vs eager static:</span> Same accuracy and compression as static_histogram. FX mode shines more with models containing complex op patterns not easily handled by eager mode.
+  </div>
+  ${buildLegend()}`;
+}
+
+// ── MATH ──────────────────────────────────────────────────────────────────────
+function buildMath() {
+  return `<div style="margin-bottom:16px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono)">Uniform affine quantization formulas used across all PTQ backends.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="math-title">Core Quantization Formulas</div>
+    <div class="math-grid">
+      <div class="math-eq"><span class="lhs">Q(x)</span> <span class="rhs">= round(x / S) + Z</span></div>
+      <div class="math-eq"><span class="lhs">x̂</span> <span class="rhs">= S · (Q(x) − Z)</span></div>
+      <div class="math-eq"><span class="lhs">ε</span> <span class="rhs">= x − x̂,  |ε| ≤ S/2</span></div>
+      <div class="math-eq"><span class="lhs">S</span> <span class="rhs">= (x_max − x_min) / (2^b − 1)</span></div>
+      <div class="math-eq"><span class="lhs">Z</span> <span class="rhs">= round(−x_min / S)</span></div>
+      <div class="math-eq"><span class="lhs">INT8 levels</span> <span class="rhs">= 2^8 − 1 = 255</span></div>
+      <div class="math-eq"><span class="lhs">INT4 levels</span> <span class="rhs">= 2^4 − 1 = 15</span></div>
+    </div>
+    <div class="math-note">
+      INT8 works well with PTQ because 255 levels gives a fine enough grid (small S → small |ε|).
+      INT4 degrades significantly: only 15 levels → large S → large max error, and errors accumulate
+      through layers with no correction mechanism. That is QAT's job (fake-quant + STE trick).
+    </div>
+  </div>
+
+  <div class="math-block">
+    <div class="math-title">Per-Backend Scale / Zero-Point Derivation</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%">
+      <thead><tr>
+        <th>Backend</th><th>S computed from</th><th>Z computed from</th><th>When</th><th>dtype W</th><th>dtype Act</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="cell-mono">Dynamic</td><td class="cell-mono cell-dim">weight range at runtime, per-batch</td><td class="cell-mono cell-dim">runtime</td><td class="cell-mono cell-dim">inference time</td><td><span class="pill pill-blue">qint8</span></td><td><span class="pill pill-ref">float32</span></td></tr>
+        <tr><td class="cell-mono">Static MinMax</td><td class="cell-mono cell-dim">[min, max] over 1024 calib samples</td><td class="cell-mono cell-dim">calibration</td><td class="cell-mono cell-dim">before inference</td><td><span class="pill pill-blue">qint8</span></td><td><span class="pill pill-purple">quint8</span></td></tr>
+        <tr><td class="cell-mono">Static MovingAvg</td><td class="cell-mono cell-dim">EMA of min/max over calib batches</td><td class="cell-mono cell-dim">calibration</td><td class="cell-mono cell-dim">before inference</td><td><span class="pill pill-blue">qint8</span></td><td><span class="pill pill-purple">quint8</span></td></tr>
+        <tr><td class="cell-mono">Static Histogram</td><td class="cell-mono cell-dim">MSE-optimal clip from histogram</td><td class="cell-mono cell-dim">calibration</td><td class="cell-mono cell-dim">before inference</td><td><span class="pill pill-blue">qint8</span></td><td><span class="pill pill-purple">quint8</span></td></tr>
+        <tr><td class="cell-mono">Static Percentile</td><td class="cell-mono cell-dim">p-th percentile of calib distribution</td><td class="cell-mono cell-dim">calibration</td><td class="cell-mono cell-dim">before inference</td><td><span class="pill pill-blue">qint8</span></td><td><span class="pill pill-purple">quint8</span></td></tr>
+        <tr><td class="cell-mono">FX oneDNN</td><td class="cell-mono cell-dim">same as static; auto-fused graph</td><td class="cell-mono cell-dim">calibration</td><td class="cell-mono cell-dim">before inference</td><td><span class="pill pill-blue">qint8</span></td><td><span class="pill pill-purple">quint8</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="math-block">
+    <div class="math-title">PTQ vs QAT</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%">
+      <thead><tr><th>Property</th><th>PTQ (this benchmark)</th><th>QAT</th></tr></thead>
+      <tbody>
+        <tr><td class="cell-mono">Retraining</td><td class="cell-dim">None required</td><td class="cell-dim">Full or fine-tune</td></tr>
+        <tr><td class="cell-mono">Setup time</td><td class="cell-gain">Minutes (calibration only)</td><td class="cell-warn">Hours (training loop)</td></tr>
+        <tr><td class="cell-mono">INT8 accuracy</td><td class="cell-gain">Excellent (this benchmark: +0.09%)</td><td class="cell-gain">Excellent</td></tr>
+        <tr><td class="cell-mono">INT4 accuracy</td><td class="cell-loss">Poor — 15 levels, errors accumulate</td><td class="cell-gain">Good — STE corrects during training</td></tr>
+        <tr><td class="cell-mono">Mechanism</td><td class="cell-dim">Post-hoc scale fitting</td><td class="cell-dim">Fake-quant nodes + Straight-Through Estimator</td></tr>
+        <tr><td class="cell-mono">Use case</td><td class="cell-dim">Deploy existing model quickly</td><td class="cell-dim">Maximum compression / INT4 targets</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="notes-box">
+    <span class="notes-title">Notes</span>
+    <span style="color:var(--text3)">GPU note:</span> PyTorch static PTQ is CPU-only. GPU INT8 → TensorRT / ONNX Runtime.<br>
+    <span style="color:var(--text3)">Speedup note:</span> INT8 ops ~2–4× faster than FP32 on CPUs with AVX-512 VNNI support.<br>
+    <span style="color:var(--text3)">BN folding:</span> Batch Norm is folded into Conv weights before quantization — eliminates a separate multiply-add per activation.
+  </div>`;
+}
+
+// ── COMPONENTS ────────────────────────────────────────────────────────────────
+function buildBaselineRow(cols = 12) {
+  return `<tr class="baseline-row">
+    <td colspan="${cols}" style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:7px 12px">
+      Baseline (FP32, unquantized) ·
+      Acc: <span style="color:var(--text)">93.20%</span> ·
+      F1: <span style="color:var(--text)">0.931884</span> ·
+      Params: <span style="color:var(--text)">23.52M</span> ·
+      Size: <span style="color:var(--text)">94.41 MB</span> ·
+      CPU Infer: <span style="color:var(--text)">1431.5 ms</span>
+      &nbsp;<span class="pill pill-ref">ref</span>
+    </td>
+  </tr>`;
+}
+
+function buildSingleRow(r, id, cols = 12) {
+  return `
+  <tr class="data-row" style="cursor:pointer" onclick="toggleDetail('${id}')">
+    <td><span class="expand-btn" id="btn-${id}">+</span></td>
+    <td class="cell-mono" style="font-weight:600">${r.backend}</td>
+    <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+    <td class="cell-num">${r.f1.toFixed(6)}</td>
+    <td class="cell-num">${r.precision.toFixed(6)}</td>
+    <td class="cell-num">${r.recall.toFixed(6)}</td>
+    <td class="${dropClass(r.accuracy_drop)}">${fmt.drop(r.accuracy_drop)}</td>
+    <td class="cell-num cell-dim">${fmt.mb(r.size_disk_mb)} MB</td>
+    <td class="cell-num cell-dim">${fmt.mb(r.disk_saved_mb)} MB</td>
+    <td class="cell-num cell-dim">${fmt.x(r.compression_ratio)}</td>
+    <td class="cell-num cell-dim">${fmt.ms(r.inference_cpu_ms)} ms</td>
+    <td>${passLabel(r.accuracy_drop)}</td>
+  </tr>
+  <tr class="detail-row" id="detail-${id}" style="display:none">
+    <td colspan="${cols}">${buildFullDetail(r)}</td>
+  </tr>`;
+}
+
+function buildDetailExpand(r) {
+  return `<div style="margin-top:14px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:11px;color:var(--text2)">
+    <span style="color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.06em">Full Metrics</span><br><br>
+    <span style="color:var(--text3)">Accuracy:</span> ${fmt.pct(r.accuracy)} &nbsp;·&nbsp; <span style="color:var(--text3)">F1:</span> ${r.f1.toFixed(6)} &nbsp;·&nbsp; <span style="color:var(--text3)">Precision:</span> ${r.precision.toFixed(6)} &nbsp;·&nbsp; <span style="color:var(--text3)">Recall:</span> ${r.recall.toFixed(6)}<br>
+    <span style="color:var(--text3)">Disk size:</span> ${fmt.mb(r.size_disk_mb)} MB &nbsp;·&nbsp; <span style="color:var(--text3)">Saved:</span> ${fmt.mb(r.disk_saved_mb)} MB &nbsp;·&nbsp; <span style="color:var(--text3)">Ratio:</span> ${fmt.x(r.compression_ratio)}<br>
+    <span style="color:var(--text3)">CPU inference:</span> ${fmt.ms(r.inference_cpu_ms)} ms &nbsp;·&nbsp; <span style="color:var(--text3)">W dtype:</span> ${r.dtype_w} &nbsp;·&nbsp; <span style="color:var(--text3)">Act dtype:</span> ${r.dtype_act}<br>
+    <span style="color:var(--text3)">Calibration samples:</span> ${r.calibration_samples}
+  </div>`;
+}
+
+function buildFullDetail(r) {
+  const drop = (BASELINE.inference_cpu_ms - r.inference_cpu_ms);
+  const items = [
+    { k: 'Accuracy', v: fmt.pct(r.accuracy) },
+    { k: 'F1 Score', v: r.f1.toFixed(6) },
+    { k: 'Precision', v: r.precision.toFixed(6) },
+    { k: 'Recall', v: r.recall.toFixed(6) },
+    { k: 'Accuracy Drop', v: fmt.drop(r.accuracy_drop), cls: r.accuracy_drop < 0 ? 'accent' : r.accuracy_drop > 0.005 ? 'danger' : '' },
+    { k: 'Size (disk)', v: fmt.mb(r.size_disk_mb) + ' MB' },
+    { k: 'Disk Saved', v: fmt.mb(r.disk_saved_mb) + ' MB' },
+    { k: 'Compression Ratio', v: fmt.x(r.compression_ratio) },
+    { k: 'CPU Inference', v: fmt.ms(r.inference_cpu_ms) + ' ms' },
+    { k: 'CPU Time Saved', v: drop.toFixed(1) + ' ms', cls: drop > 0 ? 'accent' : 'warn' },
+    { k: 'Weight dtype', v: r.dtype_w, cls: 'blue' },
+    { k: 'Activation dtype', v: r.dtype_act },
+    { k: 'Layers Quantized', v: r.layers_quantized },
+    { k: 'Calibration Samples', v: r.calibration_samples.toString() },
+    { k: 'Observer', v: r.observer },
+  ];
+  return `<div class="detail-panel">${items.map(it => `
+    <div class="detail-item">
+      <span class="detail-key">${it.k}</span>
+      <span class="detail-val ${it.cls || ''}">${it.v}</span>
+    </div>`).join('')}</div>`;
+}
+
+function buildSpeedChart(statics) {
+  const W = 560, H = 120, PL = 130, PR = 80, PT = 14, PB = 16;
+  const cW = W - PL - PR;
+  const maxMs = 510;
+
+  const bars = statics.map((r, i) => {
+    const y = PT + i * 24;
+    const w = Math.round((r.inference_cpu_ms / maxMs) * cW);
+    const isBest = r.id === 'static_minmax';
+    return `
+      <text x="${PL - 6}" y="${y + 12}" text-anchor="end" font-size="9" fill="${isBest ? 'var(--accent)' : 'var(--text2)'}" font-family="DM Mono,monospace">${r.observer}${isBest ? ' ★' : ''}</text>
+      <rect x="${PL}" y="${y + 3}" width="${w}" height="14" rx="2" fill="${isBest ? 'var(--accent)' : 'var(--blue)'}" opacity="${isBest ? '1' : '0.55'}"/>
+      <text x="${PL + w + 5}" y="${y + 13}" font-size="9" fill="var(--text2)" font-family="DM Mono,monospace">${fmt.ms(r.inference_cpu_ms)} ms</text>`;
+  }).join('');
+
+  return `<div class="chart-wrap" style="margin-bottom:20px">
+    <div class="chart-title">CPU Inference Time (ms) — lower is better</div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block">
+      <line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + statics.length * 24}" stroke="var(--border2)" stroke-width="0.5"/>
+      ${bars}
+    </svg>
+  </div>`;
+}
+
+function buildLegend() {
+  return `<div class="legend">
+    <div class="leg"><div class="leg-sq" style="background:rgba(10,124,82,.15);border:1px solid var(--accent)"></div>Pass — ≤2% accuracy drop</div>
+    <div class="leg"><div class="leg-sq" style="background:rgba(192,21,42,.12);border:1px solid var(--danger)"></div>Fail — &gt;2% drop</div>
+    <div class="leg"><span style="color:var(--accent);font-size:11px">−0.0009</span>&nbsp;gain vs baseline</div>
+    <div class="leg"><span style="color:var(--danger);font-size:11px">+0.0005</span>&nbsp;loss vs baseline</div>
+    <div class="leg" style="margin-left:auto;color:var(--text3)">Click any row to expand all fields</div>
+  </div>`;
+}
+
+// ── ROW TOGGLE ────────────────────────────────────────────────────────────────
+function toggleDetail(rowId) {
+  const row = document.getElementById(`detail-${rowId}`);
+  const btn = document.getElementById(`btn-${rowId}`);
+  if (!row) return;
+  const isOpen = openRows.has(rowId);
+  if (isOpen) {
+    row.style.display = 'none'; openRows.delete(rowId);
+    btn.textContent = '+'; btn.classList.remove('open');
+  } else {
+    row.style.display = ''; openRows.add(rowId);
+    btn.textContent = '−'; btn.classList.add('open');
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById('mainNav').addEventListener('click', e => {
+  const tab = e.target.closest('.nav-tab');
+  if (tab) renderView(tab.dataset.view);
+});
+
+const style = document.createElement('style');
+style.textContent = '.best-row td { background: rgba(26,86,196,.04) !important; }';
+document.head.appendChild(style);
+
+renderView('overview');
+</script>
+</body>
+</html>

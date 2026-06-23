@@ -1,0 +1,170 @@
+{
+  "_meta": {
+    "framework": "PFE Pruning Experiments v7 (Taylor-free)",
+    "baseline_pth": "../__2__baseline_resnet50_cifar10.pth",
+    "sparsity_target": 0.5,
+    "channel_prune_ratio": 0.3,
+    "device": "cuda",
+    "seed": 42,
+    "baseline_epochs": 50,
+    "finetune_epochs": 10,
+    "finetune_lr": 0.001,
+    "iterative_ft_per_round": [
+      4,
+      3,
+      3
+    ],
+    "lth_train_epochs": 50,
+    "lth_retrain_epochs": 50,
+    "timing_config": {
+      "warmup_reps": 50,
+      "timed_reps": 500,
+      "cuda_sync": true
+    },
+    "taxonomy": {
+      "mask_based": [
+        "1a_unstructured_noft",
+        "1b_unstructured_ft",
+        "3_magnitude",
+        "6_iterative",
+        "7_one_shot",
+        "8_movement_pruning"
+      ],
+      "architecture_changing": [
+        "2_structured"
+      ],
+      "rewind_based": [
+        "5_lottery_ticket"
+      ]
+    },
+    "paired_comparisons": {
+      "threshold_scope_no_ft": "1a vs 7  \u2192 global vs per-layer (both: no ft)",
+      "threshold_scope_with_ft": "1b vs 3  \u2192 global vs per-layer (both: ft=Nep)",
+      "fine_tune_value": "7  vs 3  \u2192 no ft vs ft=Nep (both: per-layer L1)",
+      "pruning_schedule": "3  vs 6  \u2192 one-shot vs iterative (both: per-layer L1)",
+      "ft_value_global": "1a vs 1b \u2192 ft effect on global-pruned model",
+      "criterion_movement": "3  vs 8  \u2192 L1-magnitude vs movement score"
+    }
+  },
+  "results": {
+    "1a_unstructured_noft": {
+      "accuracy": 0.932,
+      "precision": 0.9318602516928074,
+      "recall": 0.9319999999999998,
+      "f1": 0.9318784125744781,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.1479,
+      "flops_G": 2.623188992,
+      "inference_ms": 18.69987320000655,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Global L1 unstructured, no fine-tuning. Paired with 7_one_shot (per-layer, no ft) \u2192 isolates threshold scope. Paired with 1b_unstructured_ft (same pruning, adds ft) \u2192 isolates ft value."
+    },
+    "1b_unstructured_ft": {
+      "accuracy": 0.9322,
+      "precision": 0.9323908451756999,
+      "recall": 0.9322000000000001,
+      "f1": 0.9322183215607479,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.1479,
+      "flops_G": 2.623188992,
+      "inference_ms": 19.206405800010543,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Global L1 unstructured + 10-epoch fine-tune @ lr=0.001. Paired with 1a (isolates ft value) and 3_magnitude (isolates threshold scope)."
+    },
+    "2_structured": {
+      "accuracy": 0.9322,
+      "precision": 0.9319539165932484,
+      "recall": 0.9321999999999999,
+      "f1": 0.93202216548087,
+      "params_total": 18807394,
+      "params_nonzero": 18807394,
+      "sparsity_actual": 0.0,
+      "size_mb": 75.523059,
+      "size_mb_theoretical": 75.2296,
+      "flops_G": 2.068770816,
+      "inference_ms": 17.506020600005286,
+      "flops_note": "TRUE structured pruning: 30% of internal Bottleneck channels physically removed (conv1+bn1+conv2 per block). conv3, bn3, downsample untouched \u2014 residual shapes guaranteed. GFLOPs genuinely reduced; measured by thop on rebuilt model."
+    },
+    "3_magnitude": {
+      "accuracy": 0.9323,
+      "precision": 0.9323039741725043,
+      "recall": 0.9323,
+      "f1": 0.9322759044162314,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.1479,
+      "flops_G": 2.623188992,
+      "inference_ms": 19.76587999999174,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Per-layer L1 magnitude pruning + 10-epoch fine-tune @ lr=0.001. Han et al. 2015. Central reference method."
+    },
+    "5_lottery_ticket": {
+      "accuracy": 0.9337,
+      "precision": 0.9335498921155443,
+      "recall": 0.9337,
+      "f1": 0.9335007942987614,
+      "params_total": 23520842,
+      "params_nonzero": 11786980,
+      "sparsity_actual": 0.4988708312398,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.1479,
+      "flops_G": 2.623188992,
+      "inference_ms": 17.987270799989346,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "lth_note": "LTH \u2014 Frankle & Carlin 2019. \u03b8\u2080 @ SEED=42. \u03b8_T: 50-epoch in-script training (lr=0.1, SGD, ColorJitter). Global magnitude mask @ 50% on Conv2d+Linear weights only. Ticket retrained 50 epochs with frozen mask."
+    },
+    "6_iterative": {
+      "accuracy": 0.9315,
+      "precision": 0.9315746455313706,
+      "recall": 0.9315,
+      "f1": 0.9314609247196302,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.1479,
+      "flops_G": 2.623188992,
+      "inference_ms": 19.022113399987575,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "3-round per-layer L1 iterative pruning. Per-round sparsity: 0.2063 \u2192 compounds to 50%. Fine-tune epochs: [4, 3, 3] per round (total=10). Constant LR=0.001 across all rounds. make_permanent() called once after all rounds."
+    },
+    "7_one_shot": {
+      "accuracy": 0.9318,
+      "precision": 0.931472632848388,
+      "recall": 0.9318,
+      "f1": 0.9315545218036515,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.1479,
+      "flops_G": 2.623188992,
+      "inference_ms": 17.914237199991476,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Per-layer L1, 50% sparsity, zero fine-tuning. Paired with 1a (global threshold, no ft) \u2192 isolates threshold scope. Paired with 3 (same criterion, ft=Nep) \u2192 isolates fine-tuning value."
+    },
+    "8_movement_pruning": {
+      "accuracy": 0.9188,
+      "precision": 0.9207456431106051,
+      "recall": 0.9188000000000001,
+      "f1": 0.9188709496181453,
+      "params_total": 23520842,
+      "params_nonzero": 11760421,
+      "sparsity_actual": 0.5,
+      "size_mb": 94.383667,
+      "size_mb_theoretical": 47.0417,
+      "flops_G": 2.623188992,
+      "inference_ms": 18.026882400008617,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "True movement pruning (Sanh et al. 2020). Score = sign(W0) * (W1 - W0). Weights moving toward zero are pruned globally. Mask applied post-training via p.mul_() \u2014 no live hook (movement requires ft first)."
+    }
+  }
+}

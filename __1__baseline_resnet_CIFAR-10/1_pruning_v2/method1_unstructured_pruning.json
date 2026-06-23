@@ -1,0 +1,72 @@
+{
+  "method": "unstructured_pruning",
+  "description": "Global L1 unstructured pruning \u2014 individual weights zeroed globally",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "results": [
+    {
+      "sparsity": 0.3,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 51.7699,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.5,
+      "accuracy": 0.932,
+      "precision": 0.93186,
+      "recall": 0.932,
+      "f1": 0.931878,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 51.0263,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.7,
+      "accuracy": 0.9319,
+      "precision": 0.931749,
+      "recall": 0.9319,
+      "f1": 0.931752,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 51.603,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.8,
+      "accuracy": 0.9276,
+      "precision": 0.927693,
+      "recall": 0.9276,
+      "f1": 0.927507,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 51.0008,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.9,
+      "accuracy": 0.8774,
+      "precision": 0.88906,
+      "recall": 0.8774,
+      "f1": 0.878868,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 50.9169,
+      "flops": 2623188992
+    }
+  ]
+}

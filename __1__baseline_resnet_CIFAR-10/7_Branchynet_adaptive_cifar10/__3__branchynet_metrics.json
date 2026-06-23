@@ -1,0 +1,102 @@
+{
+  "model": "BranchyNet_ResNet50_CIFAR10",
+  "accuracy": 0.9582,
+  "precision": 0.9581,
+  "recall": 0.9582,
+  "f1": 0.9581,
+  "params": 23623518,
+  "size_mb": 94.8333,
+  "flops_G": 1.3121,
+  "inference_ms": 5.2819,
+  "num_exits": 3,
+  "exit_positions": [
+    "after layer1 (256ch)",
+    "after layer2 (512ch)",
+    "final fc (2048ch)"
+  ],
+  "branch_weights": [
+    0.3,
+    0.3,
+    0.4
+  ],
+  "inference_ms_adaptive_tau08": 5.677,
+  "adaptive_threshold_results": [
+    {
+      "threshold": 0.5,
+      "accuracy": 0.9193,
+      "precision": 0.9191,
+      "recall": 0.9193,
+      "f1": 0.919,
+      "frac_exit1": 0.8369,
+      "frac_exit2": 0.1174,
+      "frac_exit3": 0.0457,
+      "avg_time_ms": 0.5299
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.9372,
+      "precision": 0.937,
+      "recall": 0.9372,
+      "f1": 0.937,
+      "frac_exit1": 0.7575,
+      "frac_exit2": 0.1543,
+      "frac_exit3": 0.0882,
+      "avg_time_ms": 0.5359
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.947,
+      "precision": 0.9469,
+      "recall": 0.947,
+      "f1": 0.9469,
+      "frac_exit1": 0.6791,
+      "frac_exit2": 0.1765,
+      "frac_exit3": 0.1444,
+      "avg_time_ms": 0.5288
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.954,
+      "precision": 0.9539,
+      "recall": 0.954,
+      "f1": 0.9539,
+      "frac_exit1": 0.5718,
+      "frac_exit2": 0.2022,
+      "frac_exit3": 0.226,
+      "avg_time_ms": 0.5324
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.9579,
+      "precision": 0.9578,
+      "recall": 0.9579,
+      "f1": 0.9578,
+      "frac_exit1": 0.411,
+      "frac_exit2": 0.192,
+      "frac_exit3": 0.397,
+      "avg_time_ms": 0.5365
+    },
+    {
+      "threshold": 0.95,
+      "accuracy": 0.9578,
+      "precision": 0.9577,
+      "recall": 0.9578,
+      "f1": 0.9577,
+      "frac_exit1": 0.2582,
+      "frac_exit2": 0.137,
+      "frac_exit3": 0.6048,
+      "avg_time_ms": 0.5343
+    }
+  ],
+  "best_adaptive_result": {
+    "threshold": 0.9,
+    "accuracy": 0.9579,
+    "precision": 0.9578,
+    "recall": 0.9579,
+    "f1": 0.9578,
+    "frac_exit1": 0.411,
+    "frac_exit2": 0.192,
+    "frac_exit3": 0.397,
+    "avg_time_ms": 0.5365
+  }
+}

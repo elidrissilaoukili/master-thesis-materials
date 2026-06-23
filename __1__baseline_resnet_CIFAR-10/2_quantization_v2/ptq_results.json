@@ -1,0 +1,50 @@
+{
+  "ort_minmax": {
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "params": 23520842,
+    "size_mb": 90.176166,
+    "flops_G": 2.5957,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3007,
+      "batch128_gpu_ms": 63.9411,
+      "per_img_gpu_ms": 0.4995,
+      "throughput_imgs_sec": 2001.8,
+      "timing_method": "wall-clock (time.perf_counter)"
+    }
+  },
+  "ort_entropy": {
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "params": 23520842,
+    "size_mb": 90.176166,
+    "flops_G": 2.5957,
+    "inference_ms": {
+      "single_img_gpu_ms": 15.8481,
+      "batch128_gpu_ms": 68.1002,
+      "per_img_gpu_ms": 0.532,
+      "throughput_imgs_sec": 1879.6,
+      "timing_method": "wall-clock (time.perf_counter)"
+    }
+  },
+  "ort_percentile": {
+    "accuracy": 0.9316,
+    "precision": 0.93151,
+    "recall": 0.9316,
+    "f1": 0.931494,
+    "params": 23520842,
+    "size_mb": 90.176178,
+    "flops_G": 2.5957,
+    "inference_ms": {
+      "single_img_gpu_ms": 9.4617,
+      "batch128_gpu_ms": 66.6456,
+      "per_img_gpu_ms": 0.5207,
+      "throughput_imgs_sec": 1920.6,
+      "timing_method": "wall-clock (time.perf_counter)"
+    }
+  }
+}

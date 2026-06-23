@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTQ Analysis Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .formula { font-family: 'Courier New', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased p-6 md:p-12">
+
+    <div class="max-w-7xl mx-auto space-y-8" id="app">
+        <!-- Content injected via JS -->
+    </div>
+
+    <script>
+        const data = {
+          "method": "post_training_quantization",
+          "description": "PTQ: quantization applied after training with no gradient updates. Scale S and zero-point Z derived from calibration data. Three back-ends: dynamic (no calib), static eager (4 observers), FX-graph.",
+          "ptq_math": {
+            "quantize": "Q(x) = round(x / S) + Z",
+            "dequantize": "x̂ = S · (Q(x) − Z)",
+            "error": "ε = x − x̂,  |ε| ≤ S/2",
+            "scale": "S = (x_max − x_min) / (2^b − 1)",
+            "zero_point": "Z = round(−x_min / S)",
+            "int8_levels": "2^8 − 1 = 255",
+            "int4_levels": "2^4 − 1 = 15",
+            "note": "INT8 works well with PTQ; INT4 degrades because 15 levels gives large S → large |ε|, and errors accumulate through layers with no mechanism to correct them (that is QAT's job)."
+          },
+          "calibration_samples": 1024,
+          "calibration_batches": 8,
+          "target_dtype": "qint8 (weights) / quint8 (activations)",
+          "baseline": {
+            "accuracy": 0.932,
+            "precision": 0.9318626541334971,
+            "recall": 0.9319999999999998,
+            "f1": 0.9318835910591599,
+            "params": 23520842,
+            "size_mb": 94.408905,
+            "flops_G": 1.311594496,
+            "inference_ms": 4.578483581542969
+          },
+          "baseline_size_breakdown": {
+            "ram_fp32_mb": 89.7249,
+            "disk_pth_mb": 90.0251,
+            "inference_cpu_ms": 1431.5248
+          },
+          "device": "cpu",
+          "best_config": {
+            "backend": "static_eager",
+            "observer": "minmax",
+            "accuracy": 0.9329,
+            "accuracy_drop": -0.0009,
+            "size_disk_mb": 22.9902,
+            "compression_ratio": 3.9158
+          },
+          "results": [
+            {
+              "backend": "dynamic",
+              "observer": "per_channel_affine (runtime)",
+              "description": "Dynamic PTQ: only Linear weights quantized to qint8. S and Z computed on-the-fly per batch — no calibration data. Conv2d stays FP32. Fast to apply; no memory of x_min/x_max needed.",
+              "accuracy": 0.9319,
+              "precision": 0.931761,
+              "recall": 0.9319,
+              "f1": 0.931784,
+              "accuracy_drop": 0.0001,
+              "size_disk_mb": 89.9672,
+              "disk_saved_mb": 0.0579,
+              "compression_ratio": 1.0006,
+              "inference_cpu_ms": 1461.343,
+              "layers_quantized": "Linear only",
+              "quantization_formulas": { "Q(x)": "round(x / S) + Z", "x̂": "S · (Q(x) − Z)", "ε": "|x − x̂| ≤ S/2", "S": "computed per-batch at runtime from weight range", "dtype_w": "qint8  (8-bit signed integer)", "dtype_acts": "float32 (not quantized)" }
+            },
+            {
+              "backend": "static_eager",
+              "observer": "minmax",
+              "description": "Static PTQ (FX-graph, minmax): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+              "accuracy": 0.9329,
+              "precision": 0.932814,
+              "recall": 0.9329,
+              "f1": 0.932792,
+              "accuracy_drop": -0.0009,
+              "size_disk_mb": 22.9902,
+              "disk_saved_mb": 67.0349,
+              "compression_ratio": 3.9158,
+              "inference_cpu_ms": 470.5378,
+              "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+              "calibration_samples": 1024,
+              "quantization_formulas": { "S": "S = (x_max − x_min) / (2^8 − 1)  [255 levels for INT8]", "Z": "Z = round(−x_min / S)", "Q(x)": "Q(x) = round(x / S) + Z", "x̂": "x̂ = S · (Q(x) − Z)", "max_err": "|ε| ≤ S/2  →  smaller S = finer grid = less error", "dtype_w": "qint8", "dtype_act": "quint8" }
+            },
+            {
+              "backend": "static_eager",
+              "observer": "moving_avg",
+              "description": "Static PTQ (FX-graph, moving_avg): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+              "accuracy": 0.9316,
+              "precision": 0.931433,
+              "recall": 0.9316,
+              "f1": 0.931469,
+              "accuracy_drop": 0.0004,
+              "size_disk_mb": 22.9902,
+              "disk_saved_mb": 67.0349,
+              "compression_ratio": 3.9158,
+              "inference_cpu_ms": 473.4993,
+              "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+              "calibration_samples": 1024,
+              "quantization_formulas": { "S": "S = (x_max − x_min) / (2^8 − 1)  [255 levels for INT8]", "Z": "Z = round(−x_min / S)", "Q(x)": "Q(x) = round(x / S) + Z", "x̂": "x̂ = S · (Q(x) − Z)", "max_err": "|ε| ≤ S/2  →  smaller S = finer grid = less error", "dtype_w": "qint8", "dtype_act": "quint8" }
+            },
+            {
+              "backend": "static_eager",
+              "observer": "histogram",
+              "description": "Static PTQ (FX-graph, histogram): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+              "accuracy": 0.9315,
+              "precision": 0.931404,
+              "recall": 0.9315,
+              "f1": 0.931391,
+              "accuracy_drop": 0.0005,
+              "size_disk_mb": 22.9902,
+              "disk_saved_mb": 67.0349,
+              "compression_ratio": 3.9158,
+              "inference_cpu_ms": 455.6276,
+              "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+              "calibration_samples": 1024,
+              "quantization_formulas": { "S": "S = (x_max − x_min) / (2^8 − 1)  [255 levels for INT8]", "Z": "Z = round(−x_min / S)", "Q(x)": "Q(x) = round(x / S) + Z", "x̂": "x̂ = S · (Q(x) − Z)", "max_err": "|ε| ≤ S/2  →  smaller S = finer grid = less error", "dtype_w": "qint8", "dtype_act": "quint8" }
+            },
+            {
+              "backend": "static_eager",
+              "observer": "percentile",
+              "description": "Static PTQ (FX-graph, percentile): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+              "accuracy": 0.9321,
+              "precision": 0.931998,
+              "recall": 0.9321,
+              "f1": 0.931982,
+              "accuracy_drop": -0.0001,
+              "size_disk_mb": 22.9902,
+              "disk_saved_mb": 67.0349,
+              "compression_ratio": 3.9158,
+              "inference_cpu_ms": 483.3301,
+              "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+              "calibration_samples": 1024,
+              "quantization_formulas": { "S": "S = (x_max − x_min) / (2^8 − 1)  [255 levels for INT8]", "Z": "Z = round(−x_min / S)", "Q(x)": "Q(x) = round(x / S) + Z", "x̂": "x̂ = S · (Q(x) − Z)", "max_err": "|ε| ≤ S/2  →  smaller S = finer grid = less error", "dtype_w": "qint8", "dtype_act": "quint8" }
+            },
+            {
+              "backend": "fx_static_onednn",
+              "observer": "default_qconfig(onednn)",
+              "description": "FX-graph static PTQ (backend=onednn): torch.ao traces the computation graph, automatically fuses Conv-BN-ReLU and quantizes all eligible ops including residual adds. Same S/Z formulas as eager static; broader op coverage.",
+              "accuracy": 0.9315,
+              "precision": 0.931404,
+              "recall": 0.9315,
+              "f1": 0.931391,
+              "accuracy_drop": 0.0005,
+              "size_disk_mb": 22.9902,
+              "disk_saved_mb": 67.0349,
+              "compression_ratio": 3.9158,
+              "inference_cpu_ms": 473.0227,
+              "layers_quantized": "Conv2d + Linear + residual adds (auto-fused)",
+              "calibration_samples": 1024,
+              "quantization_formulas": { "backend": "onednn", "fusion": "automatic via FX graph tracing", "dtype": "qint8 (weights), quint8 (activations)", "throughput": "INT8 VNNI ~4× FP32 on AVX-512 CPUs" }
+            }
+          ],
+          "notes": {
+            "dynamic": "No calibration; Linear only; fastest to apply; Conv stays FP32",
+            "static_eager": "Calibration required; best INT8 accuracy; BN folded into Conv",
+            "fx_graph": "Graph-mode; broader op coverage; model must be torch.fx-traceable",
+            "gpu_note": "PyTorch static PTQ is CPU-only; GPU INT8 → TensorRT / ONNX Runtime",
+            "speedup_note": "INT8 ops ~2-4× faster than FP32 on CPUs with AVX-512 VNNI support",
+            "vs_qat": "PTQ requires no retraining and is fast; QAT closes the accuracy gap at INT4 by inserting fake-quant nodes during training and using the STE trick."
+          }
+        };
+
+        const app = document.getElementById('app');
+
+        // Helper to format numbers
+        const fmt = (n, d=4) => Number(n).toFixed(d);
+        const pct = (n) => (n * 100).toFixed(2) + '%';
+
+        // Render Header
+        const header = `
+            <div class="border-b border-slate-200 pb-6">
+                <h1 class="text-3xl font-bold text-slate-900">Post-Training Quantization (PTQ)</h1>
+                <p class="text-slate-600 mt-2">${data.description}</p>
+                <div class="flex gap-2 mt-4">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-semibold">Device: ${data.device.toUpperCase()}</span>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded font-semibold">Target: ${data.target_dtype}</span>
+                    <span class="px-2 py-1 bg-slate-100 text-slate-800 text-xs rounded font-semibold">Calibration: ${data.calibration_samples} samples</span>
+                </div>
+            </div>
+        `;
+
+        // Render Math Grid
+        const mathGrid = Object.entries(data.ptq_math).filter(([k]) => k !== 'note').map(([k, v]) => `
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                <dt class="text-xs font-semibold text-slate-500 uppercase tracking-wider">${k.replace('_', ' ')}</dt>
+                <dd class="formula text-sm text-slate-800 mt-1">${v}</dd>
+            </div>
+        `).join('');
+
+        const mathSection = `
+            <div>
+                <h2 class="text-xl font-bold text-slate-800 mb-4">Quantization Math</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">${mathGrid}</div>
+                <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+                    <strong>Note:</strong> ${data.ptq_math.note}
+                </div>
+            </div>
+        `;
+
+        // Render Baseline vs Best
+        const baseline = data.baseline;
+        const best = data.best_config;
+        const baselineSize = data.baseline_size_breakdown;
+
+        const metricsSection = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Baseline -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-700 mb-4">Baseline (FP32)</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><span class="text-slate-500">Accuracy</span><div class="font-mono font-bold">${fmt(baseline.accuracy)}</div></div>
+                        <div><span class="text-slate-500">Size (Disk)</span><div class="font-mono font-bold">${fmt(baseline.size_mb)} MB</div></div>
+                        <div><span class="text-slate-500">Params</span><div class="font-mono font-bold">${(baseline.params/1e6).toFixed(1)}M</div></div>
+                        <div><span class="text-slate-500">CPU Inference</span><div class="font-mono font-bold">${fmt(baselineSize.inference_cpu_ms)} ms</div></div>
+                    </div>
+                </div>
+                <!-- Best Config -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-l-green-500">
+                    <h3 class="text-lg font-semibold text-slate-700 mb-4">Best Config (INT8)</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><span class="text-slate-500">Accuracy</span><div class="font-mono font-bold text-green-600">${fmt(best.accuracy)}</div></div>
+                        <div><span class="text-slate-500">Size (Disk)</span><div class="font-mono font-bold text-green-600">${fmt(best.size_disk_mb)} MB</div></div>
+                        <div><span class="text-slate-500">Compression</span><div class="font-mono font-bold text-green-600">${fmt(best.compression_ratio)}x</div></div>
+                        <div><span class="text-slate-500">Backend</span><div class="font-mono font-bold">${best.backend}</div></div>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-500">
+                        Observer: ${best.observer} | Δ Acc: ${fmt(best.accuracy_drop)}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Render Results Table
+        const tableRows = data.results.map(r => {
+            const isBest = r.backend === best.backend && r.observer === best.observer;
+            const rowClass = isBest ? 'bg-green-50 border-l-4 border-l-green-500' : 'hover:bg-slate-50';
+            const accColor = r.accuracy_drop <= 0 ? 'text-green-600' : 'text-red-600';
+            
+            return `
+            <tr class="border-b border-slate-100 ${rowClass}">
+                <td class="p-4">
+                    <div class="font-semibold text-slate-800">${r.backend}</div>
+                    <div class="text-xs text-slate-500">${r.observer}</div>
+                </td>
+                <td class="p-4 font-mono text-sm">${fmt(r.accuracy)}</td>
+                <td class="p-4 font-mono text-sm ${accColor}">${fmt(r.accuracy_drop, 5)}</td>
+                <td class="p-4 font-mono text-sm">${fmt(r.size_disk_mb)} MB</td>
+                <td class="p-4 font-mono text-sm">${fmt(r.compression_ratio)}x</td>
+                <td class="p-4 font-mono text-sm">${fmt(r.inference_cpu_ms)} ms</td>
+                <td class="p-4 text-xs text-slate-500 max-w-xs truncate" title="${r.description}">${r.layers_quantized}</td>
+            </tr>
+            `;
+        }).join('');
+
+        const resultsSection = `
+            <div>
+                <h2 class="text-xl font-bold text-slate-800 mb-4">Experiment Results</h2>
+                <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-slate-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-semibold">Backend & Observer</th>
+                                <th class="p-4 font-semibold">Accuracy</th>
+                                <th class="p-4 font-semibold">Δ Acc</th>
+                                <th class="p-4 font-semibold">Size</th>
+                                <th class="p-4 font-semibold">Compression</th>
+                                <th class="p-4 font-semibold">CPU Inference</th>
+                                <th class="p-4 font-semibold">Layers Quantized</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-700">
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        // Render Notes
+        const notesList = Object.entries(data.notes).map(([k, v]) => `
+            <li class="mb-2"><strong class="capitalize text-slate-700">${k.replace('_', ' ')}:</strong> <span class="text-slate-600">${v}</span></li>
+        `).join('');
+
+        const notesSection = `
+            <div class="bg-slate-800 text-slate-300 p-6 rounded-lg">
+                <h2 class="text-lg font-bold text-white mb-4">Key Notes</h2>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                    ${notesList}
+                </ul>
+            </div>
+        `;
+
+        app.innerHTML = header + metricsSection + mathSection + resultsSection + notesSection;
+    </script>
+</body>
+</html>

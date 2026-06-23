@@ -1,0 +1,70 @@
+{
+  "fp32_baseline": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.050925,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 14.1412,
+      "batch128_cpu_ms": 780.969,
+      "per_img_cpu_ms": 6.1013,
+      "throughput_imgs_sec": 163.9,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only; CUDA events not applicable",
+      "warmup_runs": 20,
+      "timing_runs": 200
+    }
+  },
+  "static_minmax": {
+    "accuracy": 0.9329,
+    "precision": 0.932814,
+    "recall": 0.9329,
+    "f1": 0.932792,
+    "params": 23467712,
+    "params_nonzero": 20599612,
+    "size_mb": 22.989696,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 92.2007,
+      "batch128_cpu_ms": 241.5561,
+      "per_img_cpu_ms": 1.8872,
+      "throughput_imgs_sec": 529.9,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only; CUDA events not applicable",
+      "warmup_runs": 20,
+      "timing_runs": 200
+    },
+    "notes": "single_img_cpu_ms higher than FP32 is expected at batch_size=1 \u2014 FX op-dispatch overhead dominates small batches. Batch throughput is the meaningful deployment metric."
+  },
+  "_best_result": {
+    "method": "static_minmax",
+    "observer": "MinMaxObserver (per-tensor activation, per-channel weight)",
+    "backend": "onednn (CPU INT8 SIMD)",
+    "accuracy": 0.9329,
+    "f1": 0.932792,
+    "acc_drop": -0.0009,
+    "size_mb": 22.989696,
+    "size_reduction_x": 3.917,
+    "batch128_cpu_ms": 241.5561,
+    "throughput_imgs_sec": 529.9,
+    "batch_speedup_x": 3.2331,
+    "flops_G": 2.623188992,
+    "params": 23467712,
+    "params_nonzero": 20599612,
+    "selection_reason": "Only method evaluated in this script. Chosen over dynamic PTQ (sweep result): static PTQ quantizes Conv2d + Linear + residual adds in INT8; dynamic PTQ only quantizes Linear weights, leaving Conv2d (dominant compute) in FP32, giving negligible size/speed benefit."
+  },
+  "_meta": {
+    "script": "PTQ CPU best config \u2014 static_minmax",
+    "calib_images": 1024,
+    "calib_batches": 8,
+    "inference_runs": 200,
+    "warmup_runs": 20,
+    "flops_tool": "thop",
+    "flops_note": "FLOPs identical for FP32 and INT8 \u2014 quantization changes storage dtype, not arithmetic op count. INT8 batch speedup comes from VNNI/SIMD packing on CPU (4 INT8 MACs per instruction vs 1 FP32 FMA).",
+    "timing_note": "CPU-only script. time.perf_counter() is appropriate here. CUDA events are not applicable.",
+    "size_note": "Both models serialized via torch.save(model) \u2014 full model including quantization config \u2014 for a fair apples-to-apples size comparison.",
+    "param_count_note": "FX-quantized model: .weight() callable params counted via module-path key (not data_ptr) to avoid aliasing bugs. Standard params deduplicated by id(p)."
+  }
+}

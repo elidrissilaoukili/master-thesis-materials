@@ -1,0 +1,49 @@
+{
+  "fp32_baseline": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.050925,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 45.8235,
+      "batch128_cpu_ms": 7997.662,
+      "per_img_cpu_ms": 62.4817,
+      "throughput_imgs_sec": 16.0,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 CPU"
+    }
+  },
+  "static_minmax": {
+    "accuracy": 0.9329,
+    "precision": 0.932814,
+    "recall": 0.9329,
+    "f1": 0.932792,
+    "params": 23467712,
+    "params_nonzero": 20599612,
+    "size_mb": 22.990249,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 199.5895,
+      "batch128_cpu_ms": 442.5024,
+      "per_img_cpu_ms": 3.4571,
+      "throughput_imgs_sec": 289.3,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 CPU"
+    },
+    "notes": "single_img_cpu_ms higher than FP32 is expected \u2014 FX op dispatch overhead dominates at batch_size=1. Batch throughput is the meaningful deployment metric."
+  },
+  "_meta": {
+    "best_config": "static_minmax",
+    "observer": "MinMaxObserver (per-tensor activation, per-channel weight)",
+    "acc_drop": -0.0009,
+    "batch_speedup_x": 18.0737,
+    "size_reduction_x": 3.9169,
+    "calib_images": 1024,
+    "calib_batches": 8,
+    "inference_runs": 200,
+    "warmup_runs": 20,
+    "flops_note": "PTQ does not change the computation graph \u2014 GFLOPs identical to FP32 baseline. INT8 batch speedup comes from VNNI/SIMD packing (4 INT8 MACs per instruction vs 1 FP32 FMA), not fewer operations."
+  }
+}

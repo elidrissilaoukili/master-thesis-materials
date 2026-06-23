@@ -1,0 +1,119 @@
+{
+  "method": "early_exit",
+  "variant": "BranchyNet_ResNet50",
+  "dataset": "CIFAR-10",
+  "accuracy": 0.9586,
+  "precision": 0.958638,
+  "recall": 0.9586,
+  "f1": 0.958594,
+  "params": 23623518,
+  "size_mb": 90.433,
+  "flops_G": 2.595862,
+  "inference_ms": {
+    "single_img_ms": 4.9254,
+    "batch128_ms": 51.7762,
+    "per_img_ms": 0.404502,
+    "throughput_imgs_sec": 2472.18,
+    "timing_method": "CUDA events"
+  },
+  "num_exits": 3,
+  "exit_positions": [
+    "after layer1 (256ch)",
+    "after layer2 (512ch)",
+    "final fc (2048ch)"
+  ],
+  "branch_weights": [
+    0.2,
+    0.3,
+    0.5
+  ],
+  "exit_thresholds_tested": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "inference_ms_adaptive_tau08": 8.1134,
+  "adaptive_threshold_results": [
+    {
+      "threshold": 0.5,
+      "accuracy": 0.9094,
+      "precision": 0.909251,
+      "recall": 0.9094,
+      "f1": 0.909233,
+      "frac_exit1": 0.8155,
+      "frac_exit2": 0.1361,
+      "frac_exit3": 0.0484,
+      "avg_time_ms": 0.3324
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.93,
+      "precision": 0.929925,
+      "recall": 0.93,
+      "f1": 0.929882,
+      "frac_exit1": 0.7282,
+      "frac_exit2": 0.1791,
+      "frac_exit3": 0.0927,
+      "avg_time_ms": 0.3283
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.9444,
+      "precision": 0.944387,
+      "recall": 0.9444,
+      "f1": 0.944345,
+      "frac_exit1": 0.635,
+      "frac_exit2": 0.2152,
+      "frac_exit3": 0.1498,
+      "avg_time_ms": 0.3454
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.9531,
+      "precision": 0.953093,
+      "recall": 0.9531,
+      "f1": 0.953058,
+      "frac_exit1": 0.5275,
+      "frac_exit2": 0.2286,
+      "frac_exit3": 0.2439,
+      "avg_time_ms": 0.372
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.9572,
+      "precision": 0.957241,
+      "recall": 0.9572,
+      "f1": 0.95719,
+      "frac_exit1": 0.3616,
+      "frac_exit2": 0.2147,
+      "frac_exit3": 0.4237,
+      "avg_time_ms": 0.4177
+    },
+    {
+      "threshold": 0.95,
+      "accuracy": 0.9586,
+      "precision": 0.95864,
+      "recall": 0.9586,
+      "f1": 0.958595,
+      "frac_exit1": 0.2207,
+      "frac_exit2": 0.1549,
+      "frac_exit3": 0.6244,
+      "avg_time_ms": 0.4611
+    }
+  ],
+  "best_adaptive_result": {
+    "threshold": 0.95,
+    "accuracy": 0.9586,
+    "precision": 0.95864,
+    "recall": 0.9586,
+    "f1": 0.958595,
+    "frac_exit1": 0.2207,
+    "frac_exit2": 0.1549,
+    "frac_exit3": 0.6244,
+    "avg_time_ms": 0.4611
+  },
+  "saved_model_path": "e:\\baseline_resnet50_cifar10\\7_Branchynet_adaptive_cifar10 - corrected v3\\branchynet_resnet50_cifar10_fixed.pth"
+}

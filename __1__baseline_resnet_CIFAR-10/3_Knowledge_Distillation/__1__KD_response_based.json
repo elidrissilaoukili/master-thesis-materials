@@ -1,0 +1,107 @@
+{
+  "experiment": "response_based_knowledge_distillation",
+  "teacher": "resnet50_cifar10_modified",
+  "student": "resnet18_cifar10_modified",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "use_amp": true,
+  "epochs": 10,
+  "batch_size": 128,
+  "temperature": 4.0,
+  "alpha": 0.9,
+  "variants_tested": [
+    "DIST"
+  ],
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    }
+  },
+  "teacher_size_mb": 90.0294,
+  "best_variant": "DIST",
+  "best_config": {
+    "variant": "DIST",
+    "accuracy": 0.9033,
+    "accuracy_drop": 0.0287,
+    "size_mb": 42.7013,
+    "inference_ms": {
+      "single_img_gpu_ms": 6.551,
+      "batch128_gpu_ms": 13.7537,
+      "per_img_gpu_ms": 0.1075,
+      "throughput_imgs_sec": 9306.6,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "results": [
+    {
+      "method": "response_based_kd",
+      "variant": "DIST",
+      "teacher": "resnet50_cifar10_modified",
+      "student": "resnet18_cifar10_modified",
+      "dataset": "CIFAR-10",
+      "epochs": 10,
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0.0005,
+      "temperature": "N/A",
+      "alpha": 0.9,
+      "lr_schedule": "cosine",
+      "train_device": "cuda",
+      "use_amp": true,
+      "train_time_s": 427.51,
+      "epoch_train_acc": [
+        0.46124,
+        0.67352,
+        0.75744,
+        0.79742,
+        0.82908,
+        0.8541,
+        0.87962,
+        0.9013,
+        0.92072,
+        0.93202
+      ],
+      "peak_gpu_memory_mb": 883.31,
+      "accuracy": 0.9033,
+      "precision": 0.90335,
+      "recall": 0.9033,
+      "f1": 0.903201,
+      "accuracy_drop": 0.0287,
+      "params": 11173962,
+      "params_nonzero": 11173962,
+      "sparsity_actual": 0.0,
+      "size_mb": 42.7013,
+      "flops_G": 1.1158,
+      "inference_ms": {
+        "single_img_gpu_ms": 6.551,
+        "batch128_gpu_ms": 13.7537,
+        "per_img_gpu_ms": 0.1075,
+        "throughput_imgs_sec": 9306.6,
+        "timing_method": "CUDA events + torch.cuda.synchronize()"
+      },
+      "teacher_size_mb": 90.0294,
+      "compression_ratio": 2.1084,
+      "saved_model_path": "__1__saved_models_KD/student_resnet18_DIST.pth",
+      "description": "Response-based KD (DIST): ResNet50\u2192ResNet18, CIFAR-10, \u03c4=4.0, \u03b1=0.9, epochs=10, device=cuda, amp=True",
+      "status": "ok"
+    }
+  ]
+}

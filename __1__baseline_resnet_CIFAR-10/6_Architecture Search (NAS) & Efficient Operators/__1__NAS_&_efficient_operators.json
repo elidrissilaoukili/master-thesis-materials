@@ -1,0 +1,434 @@
+{
+  "method": "nas_efficient_operators",
+  "description": "DARTS cell-based NAS (pure PyTorch, no NNI) + MobileNetV1-style Depthwise-Separable network. Both designed and trained FROM SCRATCH on CIFAR-10. Baseline ResNet-50 is the comparison reference only.",
+  "approach": "design_from_scratch",
+  "key_principle": "Unlike pruning / quantization / distillation which compress an existing model, NAS and Efficient Operators design new inherently efficient architectures from the ground up. The baseline ResNet-50 is NEVER modified or reused here.",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 1.311594496,
+    "inference_ms": 4.578483581542969,
+    "params_total": 23520842,
+    "params_M": 23.5208,
+    "flops_total": 2595659776,
+    "flops_M": 2595.66,
+    "size_disk_mb": 90.0294
+  },
+  "hyperparams": {
+    "darts": {
+      "C": 16,
+      "num_cells": 8,
+      "num_nodes": 4,
+      "search_epochs": 30,
+      "search_subset": 10000,
+      "lr_weights": 0.0003,
+      "lr_arch": 0.0003,
+      "arch_wd": 0.001
+    },
+    "training": {
+      "epochs": 100,
+      "lr": 0.025,
+      "momentum": 0.9,
+      "weight_decay": 0.0003,
+      "scheduler": "cosine_annealing",
+      "init": "random (from scratch -- zero baseline weights)"
+    }
+  },
+  "results": {
+    "darts_nas": {
+      "label": "DARTS NAS",
+      "accuracy": 0.9064,
+      "precision": 0.906155,
+      "recall": 0.9064,
+      "f1": 0.906178,
+      "accuracy_drop": 0.0256,
+      "params_total": 194682,
+      "params_M": 0.1947,
+      "flops_total": 147636544,
+      "flops_M": 147.64,
+      "size_ram_mb": 0.7427,
+      "size_disk_mb": 1.186,
+      "inference_gpu_ms": 16.9388,
+      "inference_cpu_ms": 119.1811,
+      "search_epochs": 30,
+      "train_epochs": 100,
+      "search_C": 16,
+      "search_num_cells": 8,
+      "search_num_nodes": 4,
+      "search_space": [
+        "skip",
+        "avg_pool_3x3",
+        "max_pool_3x3",
+        "sep_conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_1x1"
+      ],
+      "searched_normal_ops": [
+        "conv_3x3",
+        "sep_conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "sep_conv_3x3",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3"
+      ],
+      "searched_reduction_ops": [
+        "conv_3x3",
+        "skip",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "sep_conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3"
+      ],
+      "alpha_probs": {
+        "normal": [
+          {
+            "skip": 0.1357,
+            "avg_pool_3x3": 0.1387,
+            "max_pool_3x3": 0.1457,
+            "sep_conv_3x3": 0.1426,
+            "dil_conv_3x3": 0.1474,
+            "conv_3x3": 0.1564,
+            "conv_1x1": 0.1335
+          },
+          {
+            "skip": 0.1339,
+            "avg_pool_3x3": 0.1348,
+            "max_pool_3x3": 0.1406,
+            "sep_conv_3x3": 0.1538,
+            "dil_conv_3x3": 0.1503,
+            "conv_3x3": 0.1406,
+            "conv_1x1": 0.1459
+          },
+          {
+            "skip": 0.1302,
+            "avg_pool_3x3": 0.1346,
+            "max_pool_3x3": 0.1452,
+            "sep_conv_3x3": 0.1465,
+            "dil_conv_3x3": 0.1491,
+            "conv_3x3": 0.1534,
+            "conv_1x1": 0.1411
+          },
+          {
+            "skip": 0.1338,
+            "avg_pool_3x3": 0.1379,
+            "max_pool_3x3": 0.1424,
+            "sep_conv_3x3": 0.1445,
+            "dil_conv_3x3": 0.1443,
+            "conv_3x3": 0.1587,
+            "conv_1x1": 0.1384
+          },
+          {
+            "skip": 0.1354,
+            "avg_pool_3x3": 0.1389,
+            "max_pool_3x3": 0.1479,
+            "sep_conv_3x3": 0.147,
+            "dil_conv_3x3": 0.1409,
+            "conv_3x3": 0.1481,
+            "conv_1x1": 0.1418
+          },
+          {
+            "skip": 0.1302,
+            "avg_pool_3x3": 0.1312,
+            "max_pool_3x3": 0.1354,
+            "sep_conv_3x3": 0.1456,
+            "dil_conv_3x3": 0.1587,
+            "conv_3x3": 0.1578,
+            "conv_1x1": 0.141
+          },
+          {
+            "skip": 0.1327,
+            "avg_pool_3x3": 0.1327,
+            "max_pool_3x3": 0.1389,
+            "sep_conv_3x3": 0.1479,
+            "dil_conv_3x3": 0.1525,
+            "conv_3x3": 0.1494,
+            "conv_1x1": 0.1459
+          },
+          {
+            "skip": 0.1314,
+            "avg_pool_3x3": 0.1321,
+            "max_pool_3x3": 0.1379,
+            "sep_conv_3x3": 0.1461,
+            "dil_conv_3x3": 0.1523,
+            "conv_3x3": 0.1593,
+            "conv_1x1": 0.1409
+          },
+          {
+            "skip": 0.1334,
+            "avg_pool_3x3": 0.1334,
+            "max_pool_3x3": 0.1449,
+            "sep_conv_3x3": 0.1493,
+            "dil_conv_3x3": 0.1415,
+            "conv_3x3": 0.153,
+            "conv_1x1": 0.1446
+          },
+          {
+            "skip": 0.1362,
+            "avg_pool_3x3": 0.137,
+            "max_pool_3x3": 0.1384,
+            "sep_conv_3x3": 0.1474,
+            "dil_conv_3x3": 0.1483,
+            "conv_3x3": 0.1537,
+            "conv_1x1": 0.1391
+          },
+          {
+            "skip": 0.1359,
+            "avg_pool_3x3": 0.1361,
+            "max_pool_3x3": 0.1362,
+            "sep_conv_3x3": 0.1581,
+            "dil_conv_3x3": 0.1436,
+            "conv_3x3": 0.1499,
+            "conv_1x1": 0.1402
+          },
+          {
+            "skip": 0.1316,
+            "avg_pool_3x3": 0.1329,
+            "max_pool_3x3": 0.133,
+            "sep_conv_3x3": 0.1479,
+            "dil_conv_3x3": 0.1557,
+            "conv_3x3": 0.1593,
+            "conv_1x1": 0.1395
+          },
+          {
+            "skip": 0.1292,
+            "avg_pool_3x3": 0.1311,
+            "max_pool_3x3": 0.1366,
+            "sep_conv_3x3": 0.1524,
+            "dil_conv_3x3": 0.1534,
+            "conv_3x3": 0.1525,
+            "conv_1x1": 0.1448
+          },
+          {
+            "skip": 0.1291,
+            "avg_pool_3x3": 0.1305,
+            "max_pool_3x3": 0.1402,
+            "sep_conv_3x3": 0.1517,
+            "dil_conv_3x3": 0.1542,
+            "conv_3x3": 0.1524,
+            "conv_1x1": 0.1419
+          }
+        ],
+        "reduction": [
+          {
+            "skip": 0.1452,
+            "avg_pool_3x3": 0.1425,
+            "max_pool_3x3": 0.1388,
+            "sep_conv_3x3": 0.1398,
+            "dil_conv_3x3": 0.1404,
+            "conv_3x3": 0.1543,
+            "conv_1x1": 0.139
+          },
+          {
+            "skip": 0.1493,
+            "avg_pool_3x3": 0.1405,
+            "max_pool_3x3": 0.1389,
+            "sep_conv_3x3": 0.1445,
+            "dil_conv_3x3": 0.1459,
+            "conv_3x3": 0.1436,
+            "conv_1x1": 0.1374
+          },
+          {
+            "skip": 0.1482,
+            "avg_pool_3x3": 0.1436,
+            "max_pool_3x3": 0.1429,
+            "sep_conv_3x3": 0.139,
+            "dil_conv_3x3": 0.1412,
+            "conv_3x3": 0.1486,
+            "conv_1x1": 0.1366
+          },
+          {
+            "skip": 0.1411,
+            "avg_pool_3x3": 0.1447,
+            "max_pool_3x3": 0.145,
+            "sep_conv_3x3": 0.1437,
+            "dil_conv_3x3": 0.1456,
+            "conv_3x3": 0.1411,
+            "conv_1x1": 0.1388
+          },
+          {
+            "skip": 0.1387,
+            "avg_pool_3x3": 0.1404,
+            "max_pool_3x3": 0.1388,
+            "sep_conv_3x3": 0.1428,
+            "dil_conv_3x3": 0.1538,
+            "conv_3x3": 0.1504,
+            "conv_1x1": 0.1351
+          },
+          {
+            "skip": 0.1432,
+            "avg_pool_3x3": 0.1414,
+            "max_pool_3x3": 0.1419,
+            "sep_conv_3x3": 0.1366,
+            "dil_conv_3x3": 0.1544,
+            "conv_3x3": 0.1407,
+            "conv_1x1": 0.1418
+          },
+          {
+            "skip": 0.141,
+            "avg_pool_3x3": 0.1441,
+            "max_pool_3x3": 0.1443,
+            "sep_conv_3x3": 0.1374,
+            "dil_conv_3x3": 0.1471,
+            "conv_3x3": 0.1436,
+            "conv_1x1": 0.1425
+          },
+          {
+            "skip": 0.1397,
+            "avg_pool_3x3": 0.1407,
+            "max_pool_3x3": 0.1431,
+            "sep_conv_3x3": 0.1438,
+            "dil_conv_3x3": 0.1447,
+            "conv_3x3": 0.1518,
+            "conv_1x1": 0.1363
+          },
+          {
+            "skip": 0.1357,
+            "avg_pool_3x3": 0.1397,
+            "max_pool_3x3": 0.1417,
+            "sep_conv_3x3": 0.1428,
+            "dil_conv_3x3": 0.1515,
+            "conv_3x3": 0.1502,
+            "conv_1x1": 0.1385
+          },
+          {
+            "skip": 0.1365,
+            "avg_pool_3x3": 0.1415,
+            "max_pool_3x3": 0.1389,
+            "sep_conv_3x3": 0.1427,
+            "dil_conv_3x3": 0.1469,
+            "conv_3x3": 0.1537,
+            "conv_1x1": 0.1397
+          },
+          {
+            "skip": 0.1392,
+            "avg_pool_3x3": 0.1427,
+            "max_pool_3x3": 0.1428,
+            "sep_conv_3x3": 0.1457,
+            "dil_conv_3x3": 0.1366,
+            "conv_3x3": 0.1519,
+            "conv_1x1": 0.1412
+          },
+          {
+            "skip": 0.1391,
+            "avg_pool_3x3": 0.1417,
+            "max_pool_3x3": 0.1424,
+            "sep_conv_3x3": 0.1454,
+            "dil_conv_3x3": 0.1433,
+            "conv_3x3": 0.1444,
+            "conv_1x1": 0.1437
+          },
+          {
+            "skip": 0.137,
+            "avg_pool_3x3": 0.1398,
+            "max_pool_3x3": 0.1406,
+            "sep_conv_3x3": 0.1448,
+            "dil_conv_3x3": 0.1517,
+            "conv_3x3": 0.1476,
+            "conv_1x1": 0.1385
+          },
+          {
+            "skip": 0.1337,
+            "avg_pool_3x3": 0.1394,
+            "max_pool_3x3": 0.1465,
+            "sep_conv_3x3": 0.1481,
+            "dil_conv_3x3": 0.1496,
+            "conv_3x3": 0.1439,
+            "conv_1x1": 0.1388
+          }
+        ]
+      },
+      "total_time_s": 5692.6
+    },
+    "mobilenet_wm05": {
+      "label": "MobileNetV1 wm=0.5",
+      "accuracy": 0.8907,
+      "precision": 0.890774,
+      "recall": 0.8907,
+      "f1": 0.89052,
+      "accuracy_drop": 0.0413,
+      "params_total": 554922,
+      "params_M": 0.5549,
+      "flops_total": 25401344,
+      "flops_M": 25.4,
+      "size_ram_mb": 2.1169,
+      "size_disk_mb": 2.1995,
+      "inference_gpu_ms": 4.4118,
+      "inference_cpu_ms": 42.6929,
+      "train_epochs": 100,
+      "width_mult": 0.5,
+      "total_time_s": 1322.5,
+      "design": "All DW-Sep convolutions, built from scratch",
+      "flops_formula": "(K2*C_in + C_in*C_out)*H*W per block"
+    },
+    "mobilenet_wm10": {
+      "label": "MobileNetV1 wm=1.0",
+      "accuracy": 0.909,
+      "precision": 0.909135,
+      "recall": 0.909,
+      "f1": 0.909024,
+      "accuracy_drop": 0.023,
+      "params_total": 2155338,
+      "params_M": 2.1553,
+      "flops_total": 96940032,
+      "flops_M": 96.94,
+      "size_ram_mb": 8.222,
+      "size_disk_mb": 8.3386,
+      "inference_gpu_ms": 3.9734,
+      "inference_cpu_ms": 35.6436,
+      "train_epochs": 100,
+      "width_mult": 1.0,
+      "total_time_s": 1077.8,
+      "design": "All DW-Sep convolutions, built from scratch",
+      "flops_formula": "(K2*C_in + C_in*C_out)*H*W per block"
+    }
+  },
+  "comparison_vs_baseline": {
+    "darts_nas": {
+      "accuracy_drop": 0.0256,
+      "params_reduction": 0.9917,
+      "flops_reduction": 0.9431,
+      "disk_size_reduction": 0.9868
+    },
+    "mobilenet_wm05": {
+      "accuracy_drop": 0.0413,
+      "params_reduction": 0.9764,
+      "flops_reduction": 0.9902,
+      "disk_size_reduction": 0.9756
+    },
+    "mobilenet_wm10": {
+      "accuracy_drop": 0.023,
+      "params_reduction": 0.9084,
+      "flops_reduction": 0.9627,
+      "disk_size_reduction": 0.9074
+    }
+  },
+  "notes": {
+    "nas": "Pure-PyTorch DARTS bilevel search. No NNI dependency.",
+    "search_space": "7 ops x 4 nodes x 8 cells",
+    "mobilenet": "MobileNetV1 DW-Sep blocks, width_mult=0.5 and 1.0 variants.",
+    "flops": "FLOPs = 2 x MACs via forward hooks on Conv2d + Linear.",
+    "from_scratch": "No baseline weights used. All models randomly initialised.",
+    "dw_sep_complexity": "Standard conv: K2*C_in*C_out*H*W. DW-Sep: (K2*C_in + C_in*C_out)*H*W. Ratio: 1/C_out + 1/K2 ~ 8-9x fewer for K=3."
+  }
+}

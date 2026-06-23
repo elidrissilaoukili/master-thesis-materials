@@ -1,0 +1,51 @@
+{
+  "method": "lottery_ticket_hypothesis",
+  "description": "LTH: iterative magnitude pruning to find ticket mask; compare trained-weights vs random-init",
+  "pruning_granularity": "weight (unstructured)",
+  "iterative_rounds": 5,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 1.311594496,
+    "inference_ms": 4.578483581542969
+  },
+  "device": "cuda",
+  "max_acc_drop_threshold": 0.02,
+  "best_sparsity": 0.3,
+  "results": [
+    {
+      "target_sparsity": 0.3,
+      "actual_sparsity": 0.0689,
+      "iterative_rounds": 5,
+      "winning_ticket_accuracy": 0.9321,
+      "winning_ticket_precision": 0.931969,
+      "winning_ticket_recall": 0.9321,
+      "winning_ticket_f1": 0.931987,
+      "winning_ticket_accuracy_drop": -0.0001,
+      "random_init_accuracy": 0.1,
+      "random_init_accuracy_drop": 0.832,
+      "lth_advantage_pct": 83.21,
+      "params_total": 23520842,
+      "params_active": 21905088,
+      "size_sparse_theoretical_mb": 83.5613,
+      "size_disk_mb": 90.0294,
+      "disk_saved_mb": 0.0,
+      "inference_gpu_ms": 50.997,
+      "inference_cpu_ms": 3220.9933,
+      "flops_total": 2595659776,
+      "flops_active": 2401525710,
+      "flops_reduction_pct": 7.48
+    }
+  ],
+  "notes": {
+    "winning_ticket": "Ticket mask + trained (\u03b8_T) weights. Represents pruned baseline.",
+    "random_init": "Same mask + kaiming-normal re-initialized weights. Control: untrained subnetwork.",
+    "lth_advantage_pct": "Positive = trained weights preserve accuracy vs random init. Validates LTH.",
+    "full_lth": "True LTH trains the re-initialized subnetwork; here we only evaluate it untrained as a demonstration.",
+    "reference": "Frankle & Carlin (2019) https://arxiv.org/abs/1803.03635"
+  }
+}

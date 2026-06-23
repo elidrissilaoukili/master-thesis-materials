@@ -1,0 +1,120 @@
+{
+  "experiment": "weight_sharing_hashednets",
+  "method": "weight_sharing",
+  "variant": "HashedNets",
+  "original_arch": "resnet50",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "bucket_fraction": 0.25,
+  "hash_seed": 2654435761,
+  "finetune_epochs": 5,
+  "finetune_lr": 0.001,
+  "method_description": "HashedNets: each weight index hashed to one of K=25% buckets via Knuth multiplicative hash h(i)=(SEED*i XOR i) mod K. Shared parameter per bucket; gradients accumulated across all mapped weights.",
+  "compression_time_s": 0.33,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    }
+  },
+  "original_size_mb": 90.0294,
+  "original_params": 23520842,
+  "baseline_gflops": 2.59566,
+  "pre_finetune_accuracy": 0.1,
+  "accuracy": 0.6808,
+  "precision": 0.678266,
+  "recall": 0.6808,
+  "f1": 0.677562,
+  "accuracy_drop": 0.2512,
+  "finetune_epoch_accs": [
+    0.27948,
+    0.47308,
+    0.57506,
+    0.63604,
+    0.67136
+  ],
+  "params": 5920058,
+  "param_reduction_pct": 74.83,
+  "size_mb": 201.9483,
+  "compression_ratio": 0.4458,
+  "flops_G": 0.0,
+  "inference_ms": {
+    "single_img_gpu_ms": 5.5965,
+    "batch128_gpu_ms": 52.0745,
+    "per_img_gpu_ms": 0.406832,
+    "throughput_imgs_sec": 2458.01,
+    "timing_method": "CUDA events + torch.cuda.synchronize()"
+  },
+  "saved_model_path": "e:\\baseline_resnet50_cifar10\\5__v2__Weight Sharing & Tying\\__2__HashedNets.pth",
+  "comparison": {
+    "accuracy": {
+      "baseline": 0.932,
+      "compressed": 0.6808,
+      "delta": -0.2512
+    },
+    "precision": {
+      "baseline": 0.931863,
+      "compressed": 0.678266,
+      "delta": -0.253597
+    },
+    "recall": {
+      "baseline": 0.932,
+      "compressed": 0.6808,
+      "delta": -0.2512
+    },
+    "f1": {
+      "baseline": 0.931884,
+      "compressed": 0.677562,
+      "delta": -0.254321
+    },
+    "num_parameters": {
+      "baseline": 23520842,
+      "compressed": 5920058,
+      "delta": -17600784
+    },
+    "size_mb": {
+      "baseline": 90.0294,
+      "compressed": 201.9483,
+      "delta": 111.9189
+    },
+    "inference_ms": {
+      "baseline": {
+        "single_img_gpu_ms": 4.3481,
+        "batch128_gpu_ms": 51.1816,
+        "per_img_gpu_ms": 0.3999,
+        "throughput_imgs_sec": 2500.9,
+        "timing_method": "CUDA events + torch.cuda.synchronize()"
+      },
+      "compressed": {
+        "single_img_gpu_ms": 5.5965,
+        "batch128_gpu_ms": 52.0745,
+        "per_img_gpu_ms": 0.406832,
+        "throughput_imgs_sec": 2458.01,
+        "timing_method": "CUDA events + torch.cuda.synchronize()"
+      }
+    },
+    "flops_G": {
+      "baseline": 2.59566,
+      "compressed": 0.0,
+      "delta": -2.59566
+    }
+  },
+  "status": "ok"
+}

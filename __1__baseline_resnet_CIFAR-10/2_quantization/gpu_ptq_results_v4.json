@@ -1,0 +1,311 @@
+{
+  "experiment": "GPU Post-Training Quantization (PTQ)",
+  "description": "GPU-native PTQ using three frameworks: (1) ONNX Runtime GPU with QDQ format and 3 calibration methods, (2) TensorRT INT8 engine with entropy histogram calibration and layer fusion, (3) PyTorch CUDA: dynamic PTQ + PT2E Inductor INT8.",
+  "evaluation_summary": [
+    {
+      "backend": "fp32_gpu_baseline",
+      "calibration_method": "\u2014",
+      "accuracy": 0.932,
+      "precision": 0.931863,
+      "recall": 0.932,
+      "f1": 0.931884,
+      "accuracy_drop": 0.0,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.0509,
+      "latency_mean_ms": 142.7984,
+      "latency_std_ms": 16.644,
+      "throughput_imgs_per_sec": 896.4,
+      "flops_total": 2595659776,
+      "gflops": 2.5957
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "MinMax",
+      "accuracy": 0.9319,
+      "precision": 0.931827,
+      "recall": 0.9319,
+      "f1": 0.931794,
+      "accuracy_drop": 0.0001,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.1762,
+      "latency_mean_ms": 190.6702,
+      "latency_std_ms": null,
+      "throughput_imgs_per_sec": 671.3,
+      "flops_total": 2595659776,
+      "gflops": 2.5957
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "Entropy",
+      "accuracy": 0.9319,
+      "precision": 0.931827,
+      "recall": 0.9319,
+      "f1": 0.931794,
+      "accuracy_drop": 0.0001,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.1762,
+      "latency_mean_ms": 63.7162,
+      "latency_std_ms": null,
+      "throughput_imgs_per_sec": 2008.9,
+      "flops_total": 2595659776,
+      "gflops": 2.5957
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "Percentile",
+      "accuracy": 0.9316,
+      "precision": 0.93151,
+      "recall": 0.9316,
+      "f1": 0.931494,
+      "accuracy_drop": 0.0004,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.1762,
+      "latency_mean_ms": 63.7092,
+      "latency_std_ms": null,
+      "throughput_imgs_per_sec": 2009.1,
+      "flops_total": 2595659776,
+      "gflops": 2.5957
+    }
+  ],
+  "metric_definitions": {
+    "accuracy": "Top-1 classification accuracy on CIFAR-10 test set (10,000 images)",
+    "precision": "Macro-averaged precision across all 10 classes (sklearn)",
+    "recall": "Macro-averaged recall across all 10 classes (sklearn)",
+    "f1": "Macro-averaged F1-score across all 10 classes (sklearn)",
+    "accuracy_drop": "baseline_accuracy \u2212 quantized_accuracy (lower is better)",
+    "params_total": "Total parameter count (integer); same architecture \u2192 same count across backends",
+    "params_M": "params_total / 1e6  (millions)",
+    "size_disk_mb": "Serialised model file size on disk in megabytes",
+    "latency_mean_ms": "Mean batch inference time in milliseconds (GPU: CUDA events; ORT: wall-clock)",
+    "latency_std_ms": "Standard deviation of batch inference time in milliseconds",
+    "throughput_imgs_per_sec": "BATCH_SIZE / (latency_mean_ms / 1000) \u2014 images processed per second",
+    "flops_total": "Total floating-point operations = 2 \u00d7 MACs. IDENTICAL for INT8 and FP32 \u2014 quantization does NOT change op count.",
+    "gflops": "flops_total / 1e9"
+  },
+  "ptq_math": {
+    "quantize": "Q(x) = clip(round(x / S) + Z, q_min, q_max)",
+    "dequantize": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+    "error": "\u03b5 = x \u2212 x\u0302,  |\u03b5| \u2264 S/2",
+    "scale": "S = (x_max \u2212 x_min) / (2^b \u2212 1)  [b=8 \u2192 255 levels for UINT8]",
+    "zero_point": "Z = clip(round(\u2212x_min / S), q_min, q_max)",
+    "gpu_advantage_clarification": {
+      "correct_framing": "INT8 does NOT reduce FLOPs. The GPU speedup is a hardware property: INT8 Tensor Core lanes process 4\u00d7 more elements per cycle than FP32.",
+      "int8_tensor_core_throughput_ampere": "~4\u00d7 vs FP32 (A100, RTX 30xx)",
+      "int8_tensor_core_throughput_hopper": "~8\u00d7 vs FP32 (H100)",
+      "memory_bandwidth_reduction": "~4\u00d7 (1 byte INT8 vs 4 bytes FP32 per weight)"
+    }
+  },
+  "flops_methodology": {
+    "tool": "torch.profiler (primary), fvcore, or manual hooks (fallback)",
+    "formula_conv": "FLOPs = 2 \u00d7 (Cin/groups) \u00d7 Cout \u00d7 Kh \u00d7 Kw \u00d7 Hout \u00d7 Wout",
+    "formula_linear": "FLOPs = 2 \u00d7 in_features \u00d7 out_features",
+    "macs_to_flops": "FLOPs = 2 \u00d7 MACs",
+    "critical_note": "FLOPs are IDENTICAL for INT8 and FP32 models. Use measured wall-clock latency or throughput (imgs/sec) for actual speedup."
+  },
+  "gpu_info": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "cuda_ver": "12.8",
+    "cudnn_ver": "92000"
+  },
+  "baseline_fp32": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "baseline_fp32_gpu": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "ram_fp32_mb": 89.7249,
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "accuracy_drop": 0.0,
+    "params_total": 23520842,
+    "params_M": 23.521,
+    "size_disk_mb": 90.0509,
+    "inference_latency": {
+      "mean_ms": 142.7984,
+      "std_ms": 16.644,
+      "min_ms": 113.2812,
+      "max_ms": 198.1945,
+      "samples": 50,
+      "batch_size": 128,
+      "throughput_imgs_per_sec": 896.4,
+      "timing_method": "CUDA events (GPU-synchronized)"
+    },
+    "flops_total": 2595659776,
+    "gflops": 2.5957,
+    "flops_note": "FLOPs are IDENTICAL for INT8 and FP32 \u2014 quantization changes the storage dtype and enables wider SIMD execution but does NOT reduce the arithmetic operation count. Use inference_latency.mean_ms for real-world GPU speedup comparison."
+  },
+  "calibration_config": {
+    "calib_size": 1024,
+    "calib_batches": 8,
+    "dataset": "CIFAR-10 training split (first 1024 images)"
+  },
+  "best_config": {
+    "backend": "onnxruntime_int8",
+    "calibration_method": "MinMax",
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "accuracy_drop": 0.0001,
+    "params_total": 23520842,
+    "params_M": 23.521,
+    "size_disk_mb": 90.1762,
+    "latency_mean_ms": 190.6702,
+    "throughput_imgs_per_sec": 671.3,
+    "flops_total": 2595659776,
+    "gflops": 2.5957,
+    "compression_ratio": 0.9986
+  },
+  "results": [
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "MinMax",
+      "execution_provider": "CUDAExecutionProvider",
+      "description": "ONNX Runtime static INT8 PTQ (calibration=MinMax). QDQ format: QuantizeLinear/DequantizeLinear pairs wrap each op. S = (x_max \u2212 x_min) / (2^8 \u2212 1),  Z = round(\u2212x_min / S). Calibrated on 1024 CIFAR-10 training images. GPU inference via CUDAExecutionProvider.",
+      "quantization_math": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)   [255 levels for UINT8 activations]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = clip(round(x / S) + Z, 0, 255)  \u2192 stored as UINT8",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)  \u2192 reconstructed at op boundary",
+        "\u03b5_bound": "|\u03b5| \u2264 S/2  (smaller S \u2194 finer quantisation grid \u2194 less error)",
+        "format": "QDQ (QuantizeLinear / DequantizeLinear node pairs, ONNX opset 10+)"
+      },
+      "ops_quantized": "Conv, MatMul, Gemm, Add (residual) \u2014 subject to graph partitioner",
+      "weight_dtype": "INT8 per-channel symmetric",
+      "activation_dtype": "UINT8 per-tensor affine",
+      "calibration_samples": 1024,
+      "disk_saved_mb": -0.1253,
+      "compression_ratio": 0.9986,
+      "accuracy": 0.9319,
+      "precision": 0.931827,
+      "recall": 0.9319,
+      "f1": 0.931794,
+      "accuracy_drop": 0.0001,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.1762,
+      "inference_latency": {
+        "mean_ms": 190.6702,
+        "batch_size": 128,
+        "throughput_imgs_per_sec": 671.3,
+        "timing_method": "wall-clock (time.perf_counter)"
+      },
+      "flops_total": 2595659776,
+      "gflops": 2.5957,
+      "flops_note": "FLOPs are IDENTICAL for INT8 and FP32 \u2014 quantization changes the storage dtype and enables wider SIMD execution but does NOT reduce the arithmetic operation count. Use inference_latency.mean_ms for real-world GPU speedup comparison."
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "Entropy",
+      "execution_provider": "CUDAExecutionProvider",
+      "description": "ONNX Runtime static INT8 PTQ (calibration=Entropy). QDQ format: QuantizeLinear/DequantizeLinear pairs wrap each op. S = (x_max \u2212 x_min) / (2^8 \u2212 1),  Z = round(\u2212x_min / S). Calibrated on 1024 CIFAR-10 training images. GPU inference via CUDAExecutionProvider.",
+      "quantization_math": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)   [255 levels for UINT8 activations]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = clip(round(x / S) + Z, 0, 255)  \u2192 stored as UINT8",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)  \u2192 reconstructed at op boundary",
+        "\u03b5_bound": "|\u03b5| \u2264 S/2  (smaller S \u2194 finer quantisation grid \u2194 less error)",
+        "format": "QDQ (QuantizeLinear / DequantizeLinear node pairs, ONNX opset 10+)"
+      },
+      "ops_quantized": "Conv, MatMul, Gemm, Add (residual) \u2014 subject to graph partitioner",
+      "weight_dtype": "INT8 per-channel symmetric",
+      "activation_dtype": "UINT8 per-tensor affine",
+      "calibration_samples": 1024,
+      "disk_saved_mb": -0.1253,
+      "compression_ratio": 0.9986,
+      "accuracy": 0.9319,
+      "precision": 0.931827,
+      "recall": 0.9319,
+      "f1": 0.931794,
+      "accuracy_drop": 0.0001,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.1762,
+      "inference_latency": {
+        "mean_ms": 63.7162,
+        "batch_size": 128,
+        "throughput_imgs_per_sec": 2008.9,
+        "timing_method": "wall-clock (time.perf_counter)"
+      },
+      "flops_total": 2595659776,
+      "gflops": 2.5957,
+      "flops_note": "FLOPs are IDENTICAL for INT8 and FP32 \u2014 quantization changes the storage dtype and enables wider SIMD execution but does NOT reduce the arithmetic operation count. Use inference_latency.mean_ms for real-world GPU speedup comparison."
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "Percentile",
+      "execution_provider": "CUDAExecutionProvider",
+      "description": "ONNX Runtime static INT8 PTQ (calibration=Percentile). QDQ format: QuantizeLinear/DequantizeLinear pairs wrap each op. S = (x_max \u2212 x_min) / (2^8 \u2212 1),  Z = round(\u2212x_min / S). Calibrated on 1024 CIFAR-10 training images. GPU inference via CUDAExecutionProvider.",
+      "quantization_math": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)   [255 levels for UINT8 activations]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = clip(round(x / S) + Z, 0, 255)  \u2192 stored as UINT8",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)  \u2192 reconstructed at op boundary",
+        "\u03b5_bound": "|\u03b5| \u2264 S/2  (smaller S \u2194 finer quantisation grid \u2194 less error)",
+        "format": "QDQ (QuantizeLinear / DequantizeLinear node pairs, ONNX opset 10+)"
+      },
+      "ops_quantized": "Conv, MatMul, Gemm, Add (residual) \u2014 subject to graph partitioner",
+      "weight_dtype": "INT8 per-channel symmetric",
+      "activation_dtype": "UINT8 per-tensor affine",
+      "calibration_samples": 1024,
+      "disk_saved_mb": -0.1253,
+      "compression_ratio": 0.9986,
+      "accuracy": 0.9316,
+      "precision": 0.93151,
+      "recall": 0.9316,
+      "f1": 0.931494,
+      "accuracy_drop": 0.0004,
+      "params_total": 23520842,
+      "params_M": 23.521,
+      "size_disk_mb": 90.1762,
+      "inference_latency": {
+        "mean_ms": 63.7092,
+        "batch_size": 128,
+        "throughput_imgs_per_sec": 2009.1,
+        "timing_method": "wall-clock (time.perf_counter)"
+      },
+      "flops_total": 2595659776,
+      "gflops": 2.5957,
+      "flops_note": "FLOPs are IDENTICAL for INT8 and FP32 \u2014 quantization changes the storage dtype and enables wider SIMD execution but does NOT reduce the arithmetic operation count. Use inference_latency.mean_ms for real-world GPU speedup comparison."
+    },
+    {
+      "backend": "tensorrt_int8",
+      "description": "SKIPPED \u2014 TensorRT not installed: No module named 'tensorrt'",
+      "accuracy": null,
+      "install": "pip install tensorrt pycuda"
+    },
+    {
+      "backend": "torch_cuda_dynamic",
+      "description": "FAILED: Could not run 'quantized::linear_dynamic' with arguments from the 'CUDA' backend. This could be because the operator doesn't exist for this backend, or was omitted during the selective/custom build process (if using custom build). If you are a Facebook employee using PyTorch on mobile, please visit https://fburl.com/ptmfixes for possible resolutions. 'quantized::linear_dynamic' is only available for these backends: [CPU, Meta, BackendSelect, Python, FuncTorchDynamicLayerBackMode, Functionalize, Named, Conjugate, Negative, ZeroTensor, ADInplaceOrView, AutogradOther, AutogradCPU, AutogradCUDA, AutogradXLA, AutogradMPS, AutogradXPU, AutogradHPU, AutogradLazy, AutogradMTIA, AutogradMAIA, AutogradPrivateUse1, AutogradMeta, Tracer, AutocastCPU, AutocastMTIA, AutocastMAIA, AutocastXPU, AutocastMPS, AutocastCUDA, FuncTorchBatched, BatchedNestedTensor, FuncTorchVmapMode, Batched, VmapMode, FuncTorchGradWrapper, PythonTLSSnapshot, FuncTorchDynamicLayerFrontMode, PreDispatch, PythonDispatcher].\n\nCPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\native\\quantized\\cpu\\qlinear_dynamic.cpp:1026 [kernel]\nMeta: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\MetaFallbackKernel.cpp:23 [backend fallback]\nBackendSelect: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\BackendSelectFallbackKernel.cpp:3 [backend fallback]\nPython: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:198 [backend fallback]\nFuncTorchDynamicLayerBackMode: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\DynamicLayer.cpp:479 [backend fallback]\nFunctionalize: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\FunctionalizeFallbackKernel.cpp:409 [backend fallback]\nNamed: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\NamedRegistrations.cpp:5 [backend fallback]\nConjugate: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\ConjugateFallback.cpp:17 [backend fallback]\nNegative: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\native\\NegateFallback.cpp:18 [backend fallback]\nZeroTensor: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\ZeroTensorFallback.cpp:115 [backend fallback]\nADInplaceOrView: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:103 [backend fallback]\nAutogradOther: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:62 [backend fallback]\nAutogradCPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:66 [backend fallback]\nAutogradCUDA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:74 [backend fallback]\nAutogradXLA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:86 [backend fallback]\nAutogradMPS: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:94 [backend fallback]\nAutogradXPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:70 [backend fallback]\nAutogradHPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:107 [backend fallback]\nAutogradLazy: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:90 [backend fallback]\nAutogradMTIA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:78 [backend fallback]\nAutogradMAIA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:82 [backend fallback]\nAutogradPrivateUse1: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:111 [backend fallback]\nAutogradMeta: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:98 [backend fallback]\nTracer: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\torch\\csrc\\autograd\\TraceTypeManual.cpp:296 [backend fallback]\nAutocastCPU: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:336 [backend fallback]\nAutocastMTIA: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:480 [backend fallback]\nAutocastMAIA: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:518 [backend fallback]\nAutocastXPU: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:556 [backend fallback]\nAutocastMPS: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:221 [backend fallback]\nAutocastCUDA: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:177 [backend fallback]\nFuncTorchBatched: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\LegacyBatchingRegistrations.cpp:729 [backend fallback]\nBatchedNestedTensor: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\LegacyBatchingRegistrations.cpp:756 [backend fallback]\nFuncTorchVmapMode: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\VmapModeRegistrations.cpp:22 [backend fallback]\nBatched: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\LegacyBatchingRegistrations.cpp:1072 [backend fallback]\nVmapMode: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\VmapModeRegistrations.cpp:32 [backend fallback]\nFuncTorchGradWrapper: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\TensorWrapper.cpp:210 [backend fallback]\nPythonTLSSnapshot: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:206 [backend fallback]\nFuncTorchDynamicLayerFrontMode: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\DynamicLayer.cpp:475 [backend fallback]\nPreDispatch: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:210 [backend fallback]\nPythonDispatcher: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:202 [backend fallback]\n",
+      "accuracy": null
+    },
+    {
+      "backend": "torch_pt2e_inductor_int8",
+      "description": "SKIPPED \u2014 PT2E not available: Cannot find prepare_pt2e / convert_pt2e. Tried:\n  torch.ao.quantization.quantize_pt2e: No module named 'torch.ao.quantization.quantize_pt2e'\n  torch.quantization.quantize_pt2e: No module named 'torch.quantization.quantize_pt2e'\nRequires PyTorch >= 2.3.",
+      "accuracy": null,
+      "install_hint": "pip install torch>=2.3"
+    }
+  ],
+  "framework_notes": {
+    "onnxruntime_gpu": "Requires onnxruntime-gpu. CUDAExecutionProvider dispatches to cuDNN INT8 (QLinearConv), cuBLASLt INT8 (QLinearMatMul). QDQ format.",
+    "tensorrt": "Highest throughput for production GPU serving. Kernel autotuning at build time (GPU-specific binary \u2014 NOT portable). IInt8EntropyCalibrator2.",
+    "torch_pt2e": "PT2E: torch.export \u2192 quantizer annotations \u2192 prepare_pt2e \u2192 calibrate \u2192 convert_pt2e \u2192 torch.compile(inductor). Still maturing on CUDA (torch 2.3\u20132.5).",
+    "torch_dynamic_gpu": "Stores Linear weights as INT8 but dequantizes to FP16 before cuBLAS GEMM. Saves memory bandwidth, NOT compute.",
+    "flops_vs_throughput": "FLOPs (op count) are IDENTICAL for INT8 and FP32. The INT8 speedup is entirely a hardware throughput property."
+  }
+}

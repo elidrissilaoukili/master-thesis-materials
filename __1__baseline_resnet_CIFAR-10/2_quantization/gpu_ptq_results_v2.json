@@ -1,0 +1,957 @@
+{
+  "experiment": "GPU Post-Training Quantization (PTQ)",
+  "description": "GPU-native PTQ using three frameworks: (1) ONNX Runtime GPU with QDQ format and 3 calibration methods, (2) TensorRT INT8 engine with entropy calibration and layer fusion, (3) PyTorch CUDA: dynamic PTQ + PT2E Inductor INT8. FLOPs measured via fvcore (preferred) or manual hook-based counting.",
+  "ptq_math": {
+    "quantize": "Q(x) = round(x / S) + Z",
+    "dequantize": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+    "error": "\u03b5 = x \u2212 x\u0302,  |\u03b5| \u2264 S/2",
+    "scale": "S = (x_max \u2212 x_min) / (2^b \u2212 1)",
+    "zero_point": "Z = round(\u2212x_min / S)",
+    "int8_levels": "2^8 \u2212 1 = 255",
+    "gpu_advantage": "INT8 Tensor Core throughput: 4\u00d7 vs FP32 on Ampere (A100), 8\u00d7 on Hopper (H100). TensorRT fuses Conv-BN-ReLU into single kernel, eliminating intermediate memory round-trips."
+  },
+  "flops_methodology": {
+    "tool": "fvcore.nn.FlopCountAnalysis (preferred) or manual hooks",
+    "formula_conv": "FLOPs = 2 \u00d7 (Cin/groups) \u00d7 Cout \u00d7 Kh \u00d7 Kw \u00d7 Hout \u00d7 Wout",
+    "formula_linear": "FLOPs = 2 \u00d7 in_features \u00d7 out_features",
+    "formula_bn": "FLOPs = 4 \u00d7 C \u00d7 H \u00d7 W  (norm + scale + shift + var)",
+    "macs_to_flops": "FLOPs = 2 \u00d7 MACs  (one multiply + one accumulate per MAC)",
+    "int8_note": "Op count is identical for INT8 and FP32 models. Throughput gain = hardware parallelism: INT8 VNNI processes 4 elements per cycle vs 1 for FP32."
+  },
+  "gpu_info": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "cuda_ver": "12.8",
+    "cudnn_ver": "92000"
+  },
+  "baseline_fp32": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "baseline_fp32_gpu": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "size_disk_mb": 90.0509,
+    "ram_fp32_mb": 89.7249,
+    "inference_latency": {
+      "mean_ms": 51.2857,
+      "std_ms": 0.1136,
+      "min_ms": 51.1593,
+      "max_ms": 51.9959,
+      "samples": 50,
+      "batch_size": 128,
+      "throughput_imgs_per_sec": 2495.8
+    },
+    "flops": {
+      "total_flops": 2609389568,
+      "gflops": 2.6094,
+      "layer_breakdown": {
+        "conv1": {
+          "type": "Conv2d",
+          "flops": 3538944,
+          "macs": 1769472,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "bn1": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.0.conv1": {
+          "type": "Conv2d",
+          "flops": 8388608,
+          "macs": 4194304,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "layer1.0.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.0.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "layer1.0.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.0.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            32,
+            32
+          ]
+        },
+        "layer1.0.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 1048576
+        },
+        "layer1.0.downsample.0": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            32,
+            32
+          ]
+        },
+        "layer1.0.downsample.1": {
+          "type": "BatchNorm2d",
+          "flops": 1048576
+        },
+        "layer1.1.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "layer1.1.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.1.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "layer1.1.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.1.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            32,
+            32
+          ]
+        },
+        "layer1.1.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 1048576
+        },
+        "layer1.2.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "layer1.2.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.2.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            64,
+            32,
+            32
+          ]
+        },
+        "layer1.2.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer1.2.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            32,
+            32
+          ]
+        },
+        "layer1.2.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 1048576
+        },
+        "layer2.0.conv1": {
+          "type": "Conv2d",
+          "flops": 67108864,
+          "macs": 33554432,
+          "shape_out": [
+            1,
+            128,
+            32,
+            32
+          ]
+        },
+        "layer2.0.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 524288
+        },
+        "layer2.0.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.0.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.0.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            512,
+            16,
+            16
+          ]
+        },
+        "layer2.0.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 524288
+        },
+        "layer2.0.downsample.0": {
+          "type": "Conv2d",
+          "flops": 67108864,
+          "macs": 33554432,
+          "shape_out": [
+            1,
+            512,
+            16,
+            16
+          ]
+        },
+        "layer2.0.downsample.1": {
+          "type": "BatchNorm2d",
+          "flops": 524288
+        },
+        "layer2.1.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.1.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.1.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.1.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.1.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            512,
+            16,
+            16
+          ]
+        },
+        "layer2.1.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 524288
+        },
+        "layer2.2.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.2.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.2.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.2.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.2.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            512,
+            16,
+            16
+          ]
+        },
+        "layer2.2.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 524288
+        },
+        "layer2.3.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.3.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.3.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            128,
+            16,
+            16
+          ]
+        },
+        "layer2.3.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer2.3.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            512,
+            16,
+            16
+          ]
+        },
+        "layer2.3.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 524288
+        },
+        "layer3.0.conv1": {
+          "type": "Conv2d",
+          "flops": 67108864,
+          "macs": 33554432,
+          "shape_out": [
+            1,
+            256,
+            16,
+            16
+          ]
+        },
+        "layer3.0.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.0.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.0.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.0.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.0.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.0.downsample.0": {
+          "type": "Conv2d",
+          "flops": 67108864,
+          "macs": 33554432,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.0.downsample.1": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.1.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.1.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.1.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.1.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.1.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.1.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.2.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.2.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.2.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.2.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.2.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.2.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.3.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.3.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.3.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.3.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.3.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.3.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.4.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.4.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.4.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.4.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.4.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.4.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer3.5.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.5.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.5.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            256,
+            8,
+            8
+          ]
+        },
+        "layer3.5.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 65536
+        },
+        "layer3.5.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            1024,
+            8,
+            8
+          ]
+        },
+        "layer3.5.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 262144
+        },
+        "layer4.0.conv1": {
+          "type": "Conv2d",
+          "flops": 67108864,
+          "macs": 33554432,
+          "shape_out": [
+            1,
+            512,
+            8,
+            8
+          ]
+        },
+        "layer4.0.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer4.0.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            512,
+            4,
+            4
+          ]
+        },
+        "layer4.0.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 32768
+        },
+        "layer4.0.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            2048,
+            4,
+            4
+          ]
+        },
+        "layer4.0.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer4.0.downsample.0": {
+          "type": "Conv2d",
+          "flops": 67108864,
+          "macs": 33554432,
+          "shape_out": [
+            1,
+            2048,
+            4,
+            4
+          ]
+        },
+        "layer4.0.downsample.1": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer4.1.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            512,
+            4,
+            4
+          ]
+        },
+        "layer4.1.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 32768
+        },
+        "layer4.1.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            512,
+            4,
+            4
+          ]
+        },
+        "layer4.1.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 32768
+        },
+        "layer4.1.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            2048,
+            4,
+            4
+          ]
+        },
+        "layer4.1.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "layer4.2.conv1": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            512,
+            4,
+            4
+          ]
+        },
+        "layer4.2.bn1": {
+          "type": "BatchNorm2d",
+          "flops": 32768
+        },
+        "layer4.2.conv2": {
+          "type": "Conv2d",
+          "flops": 75497472,
+          "macs": 37748736,
+          "shape_out": [
+            1,
+            512,
+            4,
+            4
+          ]
+        },
+        "layer4.2.bn2": {
+          "type": "BatchNorm2d",
+          "flops": 32768
+        },
+        "layer4.2.conv3": {
+          "type": "Conv2d",
+          "flops": 33554432,
+          "macs": 16777216,
+          "shape_out": [
+            1,
+            2048,
+            4,
+            4
+          ]
+        },
+        "layer4.2.bn3": {
+          "type": "BatchNorm2d",
+          "flops": 131072
+        },
+        "fc": {
+          "type": "Linear",
+          "flops": 40960,
+          "in": 2048,
+          "out": 10
+        }
+      },
+      "formula": {
+        "conv2d": "FLOPs = 2 \u00d7 (Cin/groups) \u00d7 Cout \u00d7 Kh \u00d7 Kw \u00d7 Hout \u00d7 Wout",
+        "linear": "FLOPs = 2 \u00d7 in_features \u00d7 out_features",
+        "batchnorm": "FLOPs = 4 \u00d7 C \u00d7 H \u00d7 W  (norm + scale + shift + var)"
+      }
+    },
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce RTX 5070 Laptop GPU"
+  },
+  "calibration_config": {
+    "calib_size": 1024,
+    "calib_batches": 8,
+    "dataset": "CIFAR-10 training split (first 1024 images)"
+  },
+  "best_config": {
+    "backend": "onnxruntime_int8",
+    "calibration_method": "MinMax",
+    "accuracy": 0.9319,
+    "accuracy_drop": 0.0001,
+    "size_disk_mb": 90.1762,
+    "compression_ratio": 0.9986,
+    "latency_mean_ms": 63.5376
+  },
+  "results": [
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "MinMax",
+      "execution_provider": "CUDAExecutionProvider",
+      "description": "ONNX Runtime static INT8 PTQ (calibration=MinMax). QDQ format: QuantizeLinear/DequantizeLinear pairs wrap each op. S = (x_max \u2212 x_min) / 255, Z = round(\u2212x_min / S). Calibrated on 1024 CIFAR-10 training images. GPU inference via CUDAExecutionProvider \u2192 cuDNN INT8 kernels.",
+      "quantization_math": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = round(x / S) + Z  \u2192 stored as INT8/UINT8",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)  \u2192 reconstructed at fusion boundary",
+        "\u03b5_bound": "|\u03b5| \u2264 S/2  (smaller S \u2194 denser range \u2194 less error)",
+        "format": "QDQ (QuantizeDequantize pairs, ONNX standard)"
+      },
+      "ops_quantized": "Conv, MatMul, Gemm, Add (residual), GlobalAveragePool",
+      "weight_dtype": "INT8 (per-channel)",
+      "activation_dtype": "UINT8 (per-tensor)",
+      "calibration_samples": 1024,
+      "accuracy": 0.9319,
+      "precision": 0.931827,
+      "recall": 0.9319,
+      "f1": 0.931794,
+      "accuracy_drop": 0.0001,
+      "size_disk_mb": 90.1762,
+      "disk_saved_mb": -0.1252,
+      "compression_ratio": 0.9986,
+      "inference_latency": {
+        "mean_ms": 63.5376,
+        "batch_size": 128
+      },
+      "flops": {
+        "total_flops": 2609389568,
+        "gflops_fp32_equivalent": null,
+        "gflops_int8_theoretical": null,
+        "note": "ONNX INT8 executes QLinearConv via cuDNN INT8 GEMM. Op count is the same as FP32; throughput gain comes from wider SIMD (4\u00d7 INT8 ops per cycle vs FP32 on Tensor Cores)."
+      }
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "Entropy",
+      "description": "FAILED: [ONNXRuntimeError] : 6 : RUNTIME_EXCEPTION : Non-zero status code returned while running Conv node. Name:'node_Conv_770' Status Message: E:\\_work\\1\\s\\onnxruntime\\core\\framework\\bfc_arena.cc:358 onnxruntime::BFCArena::AllocateRawInternal Failed to allocate memory for requested buffer of size 33554432\n",
+      "accuracy": null
+    },
+    {
+      "backend": "onnxruntime_int8",
+      "calibration_method": "Percentile",
+      "description": "FAILED: [ONNXRuntimeError] : 6 : RUNTIME_EXCEPTION : Non-zero status code returned while running Conv node. Name:'node_Conv_770' Status Message: bad allocation",
+      "accuracy": null
+    },
+    {
+      "backend": "tensorrt_int8",
+      "description": "SKIPPED \u2014 TensorRT not installed: No module named 'tensorrt'",
+      "accuracy": null,
+      "install": "pip install tensorrt pycuda"
+    },
+    {
+      "backend": "torch_cuda_dynamic",
+      "description": "FAILED: Could not run 'quantized::linear_dynamic' with arguments from the 'CUDA' backend. This could be because the operator doesn't exist for this backend, or was omitted during the selective/custom build process (if using custom build). If you are a Facebook employee using PyTorch on mobile, please visit https://fburl.com/ptmfixes for possible resolutions. 'quantized::linear_dynamic' is only available for these backends: [CPU, Meta, BackendSelect, Python, FuncTorchDynamicLayerBackMode, Functionalize, Named, Conjugate, Negative, ZeroTensor, ADInplaceOrView, AutogradOther, AutogradCPU, AutogradCUDA, AutogradXLA, AutogradMPS, AutogradXPU, AutogradHPU, AutogradLazy, AutogradMTIA, AutogradMAIA, AutogradPrivateUse1, AutogradMeta, Tracer, AutocastCPU, AutocastMTIA, AutocastMAIA, AutocastXPU, AutocastMPS, AutocastCUDA, FuncTorchBatched, BatchedNestedTensor, FuncTorchVmapMode, Batched, VmapMode, FuncTorchGradWrapper, PythonTLSSnapshot, FuncTorchDynamicLayerFrontMode, PreDispatch, PythonDispatcher].\n\nCPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\native\\quantized\\cpu\\qlinear_dynamic.cpp:1026 [kernel]\nMeta: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\MetaFallbackKernel.cpp:23 [backend fallback]\nBackendSelect: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\BackendSelectFallbackKernel.cpp:3 [backend fallback]\nPython: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:198 [backend fallback]\nFuncTorchDynamicLayerBackMode: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\DynamicLayer.cpp:479 [backend fallback]\nFunctionalize: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\FunctionalizeFallbackKernel.cpp:409 [backend fallback]\nNamed: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\NamedRegistrations.cpp:5 [backend fallback]\nConjugate: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\ConjugateFallback.cpp:17 [backend fallback]\nNegative: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\native\\NegateFallback.cpp:18 [backend fallback]\nZeroTensor: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\ZeroTensorFallback.cpp:115 [backend fallback]\nADInplaceOrView: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:103 [backend fallback]\nAutogradOther: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:62 [backend fallback]\nAutogradCPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:66 [backend fallback]\nAutogradCUDA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:74 [backend fallback]\nAutogradXLA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:86 [backend fallback]\nAutogradMPS: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:94 [backend fallback]\nAutogradXPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:70 [backend fallback]\nAutogradHPU: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:107 [backend fallback]\nAutogradLazy: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:90 [backend fallback]\nAutogradMTIA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:78 [backend fallback]\nAutogradMAIA: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:82 [backend fallback]\nAutogradPrivateUse1: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:111 [backend fallback]\nAutogradMeta: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\VariableFallbackKernel.cpp:98 [backend fallback]\nTracer: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\torch\\csrc\\autograd\\TraceTypeManual.cpp:296 [backend fallback]\nAutocastCPU: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:336 [backend fallback]\nAutocastMTIA: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:480 [backend fallback]\nAutocastMAIA: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:518 [backend fallback]\nAutocastXPU: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:556 [backend fallback]\nAutocastMPS: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:221 [backend fallback]\nAutocastCUDA: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\autocast_mode.cpp:177 [backend fallback]\nFuncTorchBatched: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\LegacyBatchingRegistrations.cpp:729 [backend fallback]\nBatchedNestedTensor: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\LegacyBatchingRegistrations.cpp:756 [backend fallback]\nFuncTorchVmapMode: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\VmapModeRegistrations.cpp:22 [backend fallback]\nBatched: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\LegacyBatchingRegistrations.cpp:1072 [backend fallback]\nVmapMode: fallthrough registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\VmapModeRegistrations.cpp:32 [backend fallback]\nFuncTorchGradWrapper: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\TensorWrapper.cpp:210 [backend fallback]\nPythonTLSSnapshot: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:206 [backend fallback]\nFuncTorchDynamicLayerFrontMode: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\functorch\\DynamicLayer.cpp:475 [backend fallback]\nPreDispatch: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:210 [backend fallback]\nPythonDispatcher: registered at C:\\actions-runner\\_work\\pytorch\\pytorch\\aten\\src\\ATen\\core\\PythonFallbackKernel.cpp:202 [backend fallback]\n",
+      "accuracy": null
+    },
+    {
+      "backend": "torch_pt2e_inductor_int8",
+      "description": "SKIPPED \u2014 PT2E not available on this PyTorch build: Cannot find prepare_pt2e / convert_pt2e. Tried:\n  torch.ao.quantization.quantize_pt2e: No module named 'torch.ao.quantization.quantize_pt2e'\n  torch.quantization.quantize_pt2e: No module named 'torch.quantization.quantize_pt2e'\nRequires PyTorch >= 2.3.  Install: pip install torch>=2.3",
+      "accuracy": null,
+      "install_hint": "pip install torch>=2.3  (PT2E requires 2.3+)"
+    }
+  ],
+  "framework_notes": {
+    "onnxruntime_gpu": "onnxruntime-gpu: requires onnxruntime-gpu (not onnxruntime). CUDAExecutionProvider uses cuDNN INT8 GEMM kernels. QDQ format inserts QuantizeLinear/DequantizeLinear pairs in graph. No engine compilation step \u2192 faster to deploy than TRT.",
+    "tensorrt": "TensorRT: kernel autotuning at build time (GPU-specific binary). Requires pycuda for Python bindings. Highest throughput for production GPU serving. Engine is NOT portable across GPU architectures.",
+    "torch_pt2e": "PT2E (PyTorch 2 Export): torch.export \u2192 quantizer annotations \u2192 prepare_pt2e \u2192 calibrate \u2192 convert_pt2e \u2192 torch.compile. Inductor backend generates INT8 Triton kernels. Most Pythonic; best integrated with PyTorch ecosystem.",
+    "why_not_cpu_static": "torch.quantization static PTQ (prepare/convert) is CPU-only. For GPU INT8: use ORT-GPU, TensorRT, or PT2E+Inductor.",
+    "flops_vs_throughput": "FLOPs count (compute ops) is the same for FP32 and INT8 models. Throughput gain from INT8 comes from hardware parallelism: INT8 SIMD/Tensor Core lanes process 4-8\u00d7 more ops per clock. Memory bandwidth is also reduced ~4\u00d7 (1 byte vs 4 bytes per weight)."
+  }
+}

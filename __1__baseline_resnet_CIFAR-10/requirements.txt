@@ -1,0 +1,10 @@
+thop
+torch
+numpy
+matplotlib
+seaborn 
+scikit-learn
+
+
+# pip install nni torch-pruning
+# pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128

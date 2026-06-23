@@ -1,0 +1,78 @@
+{
+  "method": "movement_pruning",
+  "description": "True movement pruning (Sanh et al. 2020). Score = sign(w_before) \u00d7 (w_after \u2212 w_before). Requires fine-tuning to observe weight movement direction.",
+  "finetune_config": {
+    "epochs": 3,
+    "lr": 0.0001,
+    "momentum": 0.9,
+    "weight_decay": 0.0001
+  },
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "results": [
+    {
+      "sparsity": 0.3,
+      "accuracy": 0.1,
+      "precision": 0.01,
+      "recall": 0.1,
+      "f1": 0.018182,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 51.0182,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.5,
+      "accuracy": 0.1,
+      "precision": 0.01,
+      "recall": 0.1,
+      "f1": 0.018182,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 51.0156,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.7,
+      "accuracy": 0.1,
+      "precision": 0.01,
+      "recall": 0.1,
+      "f1": 0.018182,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 50.9356,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.8,
+      "accuracy": 0.0983,
+      "precision": 0.019568,
+      "recall": 0.0983,
+      "f1": 0.022751,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 50.9436,
+      "flops": 2623188992
+    },
+    {
+      "sparsity": 0.9,
+      "accuracy": 0.1,
+      "precision": 0.01,
+      "recall": 0.1,
+      "f1": 0.018182,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 50.9366,
+      "flops": 2623188992
+    }
+  ]
+}

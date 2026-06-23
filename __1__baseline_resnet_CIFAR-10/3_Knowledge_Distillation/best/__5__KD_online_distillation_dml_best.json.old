@@ -1,0 +1,103 @@
+{
+  "method": "online_distillation_dml_best",
+  "description": "DML best config: N=2 peers, tau=3.0, epochs=15, cosine LR (no pre-trained teacher)",
+  "model_arch": "ResNet-50 \u00d7 N (CIFAR-10 modified, 3\u00d73 conv1, no maxpool)",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "use_amp": true,
+  "kd_epochs": 15,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "baseline_model_info": {
+    "size_mb": 90.0251,
+    "params_nonzero": 23494282
+  },
+  "result": {
+    "sweep": "best_config",
+    "variant": "dml",
+    "n_peers": 2,
+    "temperature": 3.0,
+    "lr": 0.1,
+    "lr_schedule": "cosine",
+    "epochs": 15,
+    "train_device": "cuda",
+    "use_amp": true,
+    "train_time_s": 1109.73,
+    "peer_epoch_acc": [
+      [
+        0.09942,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      [
+        0.09858,
+        0.09934,
+        0.10022,
+        0.09948,
+        0.0999,
+        0.09936,
+        0.10026,
+        0.09972,
+        0.10002,
+        0.10068,
+        0.09976,
+        0.09978,
+        0.10014,
+        0.0996,
+        0.09944
+      ]
+    ],
+    "peer_final_acc": [
+      0.1,
+      0.1
+    ],
+    "best_peer_idx": 0,
+    "accuracy": 0.1,
+    "ensemble_accuracy": 0.1,
+    "avg_peer_accuracy": 0.1,
+    "precision": 0.01,
+    "recall": 0.1,
+    "f1": 0.018182,
+    "accuracy_drop": 0.832,
+    "ensemble_drop": 0.832,
+    "params_nonzero": 23520842,
+    "size_mb": 90.0294,
+    "flops_G": 2.6232,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.4817,
+      "batch128_gpu_ms": 51.2517,
+      "per_img_gpu_ms": 0.4004,
+      "throughput_imgs_sec": 2497.5,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "peak_gpu_memory_mb": 3850.74,
+    "description": "Online KD (dml, N=2, tau=3.0, cosine, epochs=15)",
+    "status": "ok"
+  }
+}

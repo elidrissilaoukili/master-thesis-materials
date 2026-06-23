@@ -1,0 +1,18 @@
+{
+  "accuracy": 0.8961557663504743,
+  "precision": 0.8397851940680903,
+  "recall": 0.8381378114288278,
+  "f1": 0.8369798663689909,
+  "params": 23522375,
+  "size_mb": 94.414723,
+  "flops_G": 8.263417856,
+  "inference_ms": {
+    "gpu": {
+      "single_img_ms": 4.4541,
+      "batch128_ms": 161.3821,
+      "per_img_ms": 1.2608,
+      "throughput_imgs_sec": 793.1,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "model": "branchynet_vit_small_patch4_32",
+  "experiment": "branchynet_adaptive_computation",
+  "method": "early_exit",
+  "variant": "BranchyViT_Small",
+  "original_arch": "vit_small_patch16_224",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "epochs": 30,
+  "branch_weights": [
+    0.2,
+    0.3,
+    0.5
+  ],
+  "exit_positions": [
+    "after block 3 of 11 (~33% depth)",
+    "after block 7 of 11 (~67% depth)",
+    "final head (full depth)"
+  ],
+  "num_exits": 3,
+  "exit_thresholds_tested": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "accuracy": 0.9676,
+  "precision": 0.96768,
+  "recall": 0.9676,
+  "f1": 0.967603,
+  "params": 21445022,
+  "size_mb": 81.9687,
+  "flops_G": 2.762951,
+  "input_resolution": 32,
+  "patch_size": 4,
+  "num_patches": 64,
+  "inference_ms": {
+    "cpu": {
+      "single_img_ms": 12.7865,
+      "batch128_ms": 816.1912,
+      "per_img_ms": 6.3765,
+      "throughput_imgs_sec": 156.8,
+      "timing_method": "time.perf_counter()"
+    },
+    "gpu": {
+      "single_img_ms": 5.9061,
+      "batch128_ms": 53.7969,
+      "per_img_ms": 0.4203,
+      "throughput_imgs_sec": 2379.3,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "inference_ms_adaptive_tau08": 2.4771,
+  "adaptive_threshold_results": [
+    {
+      "threshold": 0.5,
+      "accuracy": 0.9387,
+      "precision": 0.938781,
+      "recall": 0.9387,
+      "f1": 0.938704,
+      "frac_exit1": 0.8327,
+      "frac_exit2": 0.1625,
+      "frac_exit3": 0.0048,
+      "avg_time_ms": 0.5488
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.9447,
+      "precision": 0.944725,
+      "recall": 0.9447,
+      "f1": 0.944679,
+      "frac_exit1": 0.8731,
+      "frac_exit2": 0.1149,
+      "frac_exit3": 0.012,
+      "avg_time_ms": 0.5865
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.952,
+      "precision": 0.952062,
+      "recall": 0.952,
+      "f1": 0.952008,
+      "frac_exit1": 0.8709,
+      "frac_exit2": 0.1056,
+      "frac_exit3": 0.0235,
+      "avg_time_ms": 0.578
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.9591,
+      "precision": 0.959175,
+      "recall": 0.9591,
+      "f1": 0.959116,
+      "frac_exit1": 0.8274,
+      "frac_exit2": 0.1253,
+      "frac_exit3": 0.0473,
+      "avg_time_ms": 0.5639
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.9659,
+      "precision": 0.965963,
+      "recall": 0.9659,
+      "f1": 0.965896,
+      "frac_exit1": 0.6392,
+      "frac_exit2": 0.2401,
+      "frac_exit3": 0.1207,
+      "avg_time_ms": 0.595
+    },
+    {
+      "threshold": 0.95,
+      "accuracy": 0.9673,
+      "precision": 0.967387,
+      "recall": 0.9673,
+      "f1": 0.967306,
+      "frac_exit1": 0.0485,
+      "frac_exit2": 0.0007,
+      "frac_exit3": 0.9508,
+      "avg_time_ms": 0.5675
+    }
+  ],
+  "best_adaptive_result": {
+    "threshold": 0.95,
+    "accuracy": 0.9673,
+    "precision": 0.967387,
+    "recall": 0.9673,
+    "f1": 0.967306,
+    "frac_exit1": 0.0485,
+    "frac_exit2": 0.0007,
+    "frac_exit3": 0.9508,
+    "avg_time_ms": 0.5675
+  },
+  "saved_model_path": "e:\\baseline_ViT\\__2__early_exist\\__5__branchynet_vit_cifar10.pth",
+  "status": "ok"
+}

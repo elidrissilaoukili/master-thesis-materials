@@ -1,0 +1,147 @@
+{
+  "experiment": "online_distillation_dml",
+  "method": "online_distillation_dml",
+  "variant": "DML",
+  "description": "Online Distillation \u2014 DML: two ResNet-50 peers co-trained with mutual KL divergence, warm-start init, no pre-trained teacher.",
+  "model_arch": "ResNet-50 \u00d7 2 (CIFAR-10 modified, 3\u00d73 conv1, no maxpool)",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "use_amp": true,
+  "batch_size": 128,
+  "temperature": 3.0,
+  "n_peers": 2,
+  "warmup_epochs": 2,
+  "kd_epochs": 10,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    }
+  },
+  "model_info": {
+    "size_mb": 90.0251,
+    "params": 23520842
+  },
+  "best_config": {
+    "variant": "DML",
+    "n_peers": 2,
+    "temperature": 3.0,
+    "accuracy": 0.7611,
+    "ensemble_accuracy": 0.7501,
+    "accuracy_drop": 0.1709,
+    "size_mb": 90.0294,
+    "inference_ms": {
+      "single_img_gpu_ms": 25.6271,
+      "batch128_gpu_ms": 51.7771,
+      "per_img_gpu_ms": 0.4045,
+      "throughput_imgs_sec": 2472.1,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "results": [
+    {
+      "method": "online_distillation_dml",
+      "variant": "DML",
+      "model_arch": "ResNet-50 \u00d7 2 peers (CIFAR-10 modified, 3\u00d73 conv1, no maxpool)",
+      "dataset": "CIFAR-10",
+      "n_peers": 2,
+      "temperature": 3.0,
+      "alpha": "N/A",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0.0001,
+      "lr_schedule": "cosine",
+      "warmup_epochs": 2,
+      "kd_epochs": 10,
+      "total_epochs": 12,
+      "train_device": "cuda",
+      "use_amp": true,
+      "train_time_s": 1061.77,
+      "warmup_epoch_acc": [
+        [
+          0.17802,
+          0.32532
+        ],
+        [
+          0.18878,
+          0.28572
+        ]
+      ],
+      "peer_epoch_acc": [
+        [
+          0.40744,
+          0.4721,
+          0.5364,
+          0.59938,
+          0.64698,
+          0.68214,
+          0.7156,
+          0.73954,
+          0.76106,
+          0.77388
+        ],
+        [
+          0.36732,
+          0.42854,
+          0.48724,
+          0.5464,
+          0.59708,
+          0.63318,
+          0.66568,
+          0.68962,
+          0.71414,
+          0.72748
+        ]
+      ],
+      "peer_final_acc": [
+        0.7611,
+        0.7201
+      ],
+      "best_peer_idx": 0,
+      "peak_gpu_memory_mb": 3796.72,
+      "accuracy": 0.7611,
+      "precision": 0.759427,
+      "recall": 0.7611,
+      "f1": 0.759722,
+      "accuracy_drop": 0.1709,
+      "ensemble_accuracy": 0.7501,
+      "ensemble_drop": 0.1819,
+      "avg_peer_accuracy": 0.7406,
+      "params": 23520842,
+      "params_nonzero": 23520842,
+      "sparsity_actual": 0.0,
+      "size_mb": 90.0294,
+      "flops_G": 2.6232,
+      "inference_ms": {
+        "single_img_gpu_ms": 25.6271,
+        "batch128_gpu_ms": 51.7771,
+        "per_img_gpu_ms": 0.4045,
+        "throughput_imgs_sec": 2472.1,
+        "timing_method": "CUDA events + torch.cuda.synchronize()"
+      },
+      "saved_model_paths": [
+        "__dml_saved_models/dml_peer0_resnet50.pth",
+        "__dml_saved_models/dml_peer1_resnet50.pth"
+      ],
+      "description": "Online KD (DML, N=2, \u03c4=3.0, warm-start=2ep, cosine, kd_epochs=10, amp=True)",
+      "status": "ok"
+    }
+  ]
+}

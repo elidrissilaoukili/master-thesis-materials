@@ -1,0 +1,253 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.controls label{font-size:12px;color:var(--color-text-secondary)}
+select,button{font-size:12px}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.pass{background:#EAF3DE;color:#27500A}
+.fail{background:#FCEBEB;color:#791F1F}
+.best-row td{background:var(--color-background-secondary)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+th{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:7px 8px;border-bottom:1px solid var(--color-border-secondary);white-space:nowrap;background:var(--color-background-primary);position:sticky;top:0;z-index:2}
+td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:middle}
+tr:hover td{background:var(--color-background-secondary)}
+.num{font-family:var(--font-mono);text-align:right}
+.method-cell{font-weight:500;font-size:12px}
+.sp-cell{font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)}
+.drop-pos{color:var(--color-text-success);font-family:var(--font-mono)}
+.drop-neg{color:var(--color-text-danger);font-family:var(--font-mono)}
+.bar-wrap{display:flex;align-items:center;gap:5px}
+.bar-bg{height:6px;background:var(--color-border-tertiary);border-radius:3px;flex:1;min-width:40px}
+.bar-fill{height:6px;border-radius:3px}
+.section-divider td{background:var(--color-background-secondary);font-size:11px;font-weight:500;color:var(--color-text-secondary);padding:5px 8px;letter-spacing:.04em}
+.export-btn{padding:5px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-size:12px}
+.export-btn:hover{background:var(--color-background-secondary)}
+.filter-select{padding:4px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.sort-btn{cursor:pointer;user-select:none}
+.sort-btn:hover{color:var(--color-text-primary)}
+.copy-msg{font-size:11px;color:var(--color-text-success);opacity:0;transition:opacity .4s}
+.legend-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.leg-sq{width:10px;height:10px;border-radius:2px}
+</style>
+
+<div class="controls">
+  <div style="display:flex;align-items:center;gap:6px">
+    <label>Filter by method</label>
+    <select class="filter-select" id="fMethod" onchange="render()">
+      <option value="">All methods</option>
+      <option>Unstructured</option>
+      <option>Structured</option>
+      <option>Magnitude</option>
+      <option>Movement</option>
+      <option>Lottery Ticket</option>
+      <option>Iterative</option>
+      <option>One-Shot</option>
+    </select>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <label>Sparsity</label>
+    <select class="filter-select" id="fSp" onchange="render()">
+      <option value="">All</option>
+      <option>30%</option><option>50%</option><option>70%</option>
+      <option>80%</option><option>90%</option>
+    </select>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <label>Show</label>
+    <select class="filter-select" id="fPass" onchange="render()">
+      <option value="">All rows</option>
+      <option value="pass">Pass only (≤2% drop)</option>
+      <option value="fail">Fail only</option>
+    </select>
+  </div>
+  <button class="export-btn" onclick="copyCSV()">Copy as CSV ↗</button>
+  <span class="copy-msg" id="copyMsg">Copied!</span>
+</div>
+
+<div style="overflow-x:auto">
+<table id="mainTable">
+<thead>
+<tr>
+  <th style="width:110px" class="sort-btn" onclick="sortBy('method')">Method <span id="s_method"></span></th>
+  <th style="width:58px" class="sort-btn" onclick="sortBy('sparsity')">Sparsity <span id="s_sparsity"></span></th>
+  <th style="width:72px" class="sort-btn" onclick="sortBy('accuracy')">Accuracy <span id="s_accuracy"></span></th>
+  <th style="width:65px" class="sort-btn" onclick="sortBy('f1')">F1 <span id="s_f1"></span></th>
+  <th style="width:72px" class="sort-btn" onclick="sortBy('drop')">Acc drop <span id="s_drop"></span></th>
+  <th style="width:90px">Active params</th>
+  <th style="width:80px" class="sort-btn" onclick="sortBy('sparse_mb')">Sparse MB <span id="s_sparse_mb"></span></th>
+  <th style="width:72px" class="sort-btn" onclick="sortBy('infer')">Infer ms <span id="s_infer"></span></th>
+  <th style="width:66px">Threshold</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<div class="legend-row">
+  <div class="leg"><div class="leg-sq" style="background:#EAF3DE;border:1px solid #97C459"></div>Pass — within 2% accuracy drop</div>
+  <div class="leg"><div class="leg-sq" style="background:#FCEBEB;border:1px solid #F09595"></div>Fail — exceeds 2% drop</div>
+  <div class="leg"><span style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-success)">−0.0006</span>&nbsp;gain</div>
+  <div class="leg"><span style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-danger)">+0.0175</span>&nbsp;loss</div>
+  <div class="leg" style="margin-left:auto"><span style="font-size:11px;color:var(--color-text-secondary)">Sparse MB = active params × 4B (theoretical sparse format)</span></div>
+</div>
+
+<script>
+const BASE = {accuracy:0.927,f1:0.9269,params:23520842,size_mb:94.41,infer_ms:4.34};
+const MAX_DROP = 0.02;
+
+const RAW = [
+  {method:'Unstructured', sp:0.30, acc:0.9270, f1:0.9270, drop:0.0000,  active:16480528, sparse_mb:62.87, infer:50.45},
+  {method:'Unstructured', sp:0.50, acc:0.9271, f1:0.9271, drop:-0.0001, active:11786986, sparse_mb:44.96, infer:50.55},
+  {method:'Unstructured', sp:0.70, acc:0.9276, f1:0.9276, drop:-0.0006, active:7093444,  sparse_mb:27.06, infer:50.90},
+  {method:'Unstructured', sp:0.80, acc:0.9251, f1:0.9250, drop:0.0019,  active:4746672,  sparse_mb:18.11, infer:50.75},
+  {method:'Unstructured', sp:0.90, acc:0.9095, f1:0.9097, drop:0.0175,  active:2399901,  sparse_mb:9.15,  infer:51.44},
+
+  {method:'Structured',   sp:0.10, acc:0.9260, f1:0.9258, drop:0.0010, active:21100000, sparse_mb:80.53, infer:49.20},
+  {method:'Structured',   sp:0.20, acc:0.9240, f1:0.9238, drop:0.0030, active:18820000, sparse_mb:71.82, infer:48.80},
+  {method:'Structured',   sp:0.30, acc:0.9210, f1:0.9208, drop:0.0060, active:16470000, sparse_mb:62.85, infer:48.10},
+  {method:'Structured',   sp:0.40, acc:0.9180, f1:0.9177, drop:0.0090, active:14120000, sparse_mb:53.88, infer:47.60},
+  {method:'Structured',   sp:0.50, acc:0.9130, f1:0.9127, drop:0.0140, active:11786000, sparse_mb:44.96, infer:46.90},
+
+  {method:'Magnitude',    sp:0.30, acc:0.9268, f1:0.9267, drop:0.0002, active:16480528, sparse_mb:62.87, infer:50.80},
+  {method:'Magnitude',    sp:0.50, acc:0.9265, f1:0.9264, drop:0.0005, active:11786986, sparse_mb:44.96, infer:50.90},
+  {method:'Magnitude',    sp:0.70, acc:0.9259, f1:0.9257, drop:0.0011, active:7093444,  sparse_mb:27.06, infer:51.10},
+  {method:'Magnitude',    sp:0.80, acc:0.9241, f1:0.9239, drop:0.0029, active:4746672,  sparse_mb:18.11, infer:51.20},
+  {method:'Magnitude',    sp:0.90, acc:0.9088, f1:0.9085, drop:0.0182, active:2399901,  sparse_mb:9.15,  infer:52.10},
+
+  {method:'Movement',     sp:0.30, acc:0.9262, f1:0.9260, drop:0.0008, active:16480528, sparse_mb:62.87, infer:50.70},
+  {method:'Movement',     sp:0.50, acc:0.9255, f1:0.9252, drop:0.0015, active:11786986, sparse_mb:44.96, infer:50.85},
+  {method:'Movement',     sp:0.70, acc:0.9248, f1:0.9245, drop:0.0022, active:7093444,  sparse_mb:27.06, infer:51.00},
+  {method:'Movement',     sp:0.80, acc:0.9231, f1:0.9228, drop:0.0039, active:4746672,  sparse_mb:18.11, infer:51.30},
+  {method:'Movement',     sp:0.90, acc:0.9071, f1:0.9068, drop:0.0199, active:2399901,  sparse_mb:9.15,  infer:51.80},
+
+  {method:'Lottery Ticket',sp:0.30, acc:0.9270, f1:0.9269, drop:0.0000, active:16480528, sparse_mb:62.87, infer:50.45},
+  {method:'Lottery Ticket',sp:0.50, acc:0.9271, f1:0.9270, drop:-0.0001,active:11786986, sparse_mb:44.96, infer:50.55},
+  {method:'Lottery Ticket',sp:0.70, acc:0.9274, f1:0.9273, drop:-0.0004,active:7093444,  sparse_mb:27.06, infer:50.90},
+  {method:'Lottery Ticket',sp:0.80, acc:0.9250, f1:0.9249, drop:0.0020, active:4746672,  sparse_mb:18.11, infer:50.75},
+  {method:'Lottery Ticket',sp:0.90, acc:0.9093, f1:0.9091, drop:0.0177, active:2399901,  sparse_mb:9.15,  infer:51.44},
+
+  {method:'Iterative',    sp:0.30, acc:0.9271, f1:0.9270, drop:-0.0001, active:16480528, sparse_mb:62.87, infer:50.60},
+  {method:'Iterative',    sp:0.50, acc:0.9272, f1:0.9271, drop:-0.0002, active:11786986, sparse_mb:44.96, infer:50.70},
+  {method:'Iterative',    sp:0.70, acc:0.9277, f1:0.9276, drop:-0.0007, active:7093444,  sparse_mb:27.06, infer:51.00},
+  {method:'Iterative',    sp:0.80, acc:0.9253, f1:0.9252, drop:0.0017,  active:4746672,  sparse_mb:18.11, infer:51.10},
+  {method:'Iterative',    sp:0.90, acc:0.9097, f1:0.9095, drop:0.0173,  active:2399901,  sparse_mb:9.15,  infer:51.50},
+
+  {method:'One-Shot',     sp:0.30, acc:0.9270, f1:0.9269, drop:0.0000,  active:16480528, sparse_mb:62.87, infer:50.45},
+  {method:'One-Shot',     sp:0.50, acc:0.9269, f1:0.9268, drop:0.0001,  active:11786986, sparse_mb:44.96, infer:50.60},
+  {method:'One-Shot',     sp:0.70, acc:0.9263, f1:0.9261, drop:0.0007,  active:7093444,  sparse_mb:27.06, infer:50.95},
+  {method:'One-Shot',     sp:0.80, acc:0.9244, f1:0.9242, drop:0.0026,  active:4746672,  sparse_mb:18.11, infer:51.15},
+  {method:'One-Shot',     sp:0.90, acc:0.9092, f1:0.9090, drop:0.0178,  active:2399901,  sparse_mb:9.15,  infer:51.60},
+];
+
+let sortCol = 'method', sortDir = 1;
+
+function sortBy(col) {
+  if(sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+  ['method','sparsity','accuracy','f1','drop','sparse_mb','infer'].forEach(c => {
+    const el = document.getElementById('s_'+c);
+    if(el) el.textContent = c === sortCol ? (sortDir === 1 ? ' ↑' : ' ↓') : '';
+  });
+  render();
+}
+
+function render() {
+  const fMethod = document.getElementById('fMethod').value;
+  const fSp     = document.getElementById('fSp').value;
+  const fPass   = document.getElementById('fPass').value;
+
+  let data = RAW.filter(r => {
+    if(fMethod && r.method !== fMethod) return false;
+    if(fSp && r.sp*100+'%' !== fSp) return false;
+    if(fPass === 'pass' && r.drop > MAX_DROP) return false;
+    if(fPass === 'fail' && r.drop <= MAX_DROP) return false;
+    return true;
+  });
+
+  data.sort((a,b) => {
+    const map = {method:'method',sparsity:'sp',accuracy:'acc',f1:'f1',drop:'drop',sparse_mb:'sparse_mb',infer:'infer'};
+    const k = map[sortCol] || 'method';
+    if(a[k] < b[k]) return -sortDir;
+    if(a[k] > b[k]) return sortDir;
+    return 0;
+  });
+
+  const maxSparse = Math.max(...RAW.map(r=>r.sparse_mb));
+  const tbody = document.getElementById('tbody');
+  let html = '';
+
+  const baseline_row = `<tr class="section-divider"><td colspan="9">Baseline (unpruned)</td></tr>
+  <tr>
+    <td class="method-cell" style="color:var(--color-text-secondary)">ResNet-50</td>
+    <td class="sp-cell">0%</td>
+    <td class="num">${(BASE.accuracy*100).toFixed(2)}%</td>
+    <td class="num">${(BASE.f1*100).toFixed(2)}%</td>
+    <td class="num" style="color:var(--color-text-secondary)">—</td>
+    <td class="num">${(BASE.params/1e6).toFixed(1)}M</td>
+    <td>
+      <div class="bar-wrap">
+        <div class="bar-bg"><div class="bar-fill" style="width:100%;background:#B4B2A9"></div></div>
+        <span style="font-size:11px;font-family:var(--font-mono);min-width:34px;text-align:right;color:var(--color-text-secondary)">${(BASE.params*4/1024**2).toFixed(1)}</span>
+      </div>
+    </td>
+    <td class="num">${BASE.infer_ms.toFixed(2)}</td>
+    <td><span class="pill" style="background:var(--color-background-secondary);color:var(--color-text-secondary)">ref</span></td>
+  </tr>`;
+
+  let prevMethod = null;
+  data.forEach(r => {
+    const pass = r.drop <= MAX_DROP;
+    const dropCls = r.drop < 0 ? 'drop-pos' : 'drop-neg';
+    const dropSign = r.drop < 0 ? '' : '+';
+    const barW = Math.round(r.sparse_mb / maxSparse * 100);
+    const barColor = pass ? '#1D9E75' : '#D85A30';
+    const rowCls = pass ? '' : '';
+
+    if(sortCol === 'method' && r.method !== prevMethod) {
+      html += `<tr class="section-divider"><td colspan="9">${r.method}</td></tr>`;
+      prevMethod = r.method;
+    }
+
+    html += `<tr class="${rowCls}">
+      <td class="method-cell">${sortCol === 'method' ? '' : r.method}</td>
+      <td class="sp-cell">${Math.round(r.sp*100)}%</td>
+      <td class="num">${(r.acc*100).toFixed(2)}%</td>
+      <td class="num">${(r.f1*100).toFixed(2)}%</td>
+      <td class="${dropCls}">${dropSign}${r.drop.toFixed(4)}</td>
+      <td class="num" style="color:var(--color-text-secondary)">${(r.active/1e6).toFixed(1)}M</td>
+      <td>
+        <div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${barColor}"></div></div>
+          <span style="font-size:11px;font-family:var(--font-mono);min-width:34px;text-align:right;color:var(--color-text-secondary)">${r.sparse_mb.toFixed(1)}</span>
+        </div>
+      </td>
+      <td class="num">${r.infer.toFixed(1)}</td>
+      <td><span class="pill ${pass?'pass':'fail'}">${pass?'pass':'fail'}</span></td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = baseline_row + html;
+}
+
+function copyCSV() {
+  const headers = ['Method','Sparsity','Accuracy','F1','Acc_drop','Active_params','Sparse_MB','Infer_ms','Pass'];
+  const rows = RAW.map(r => [
+    r.method, Math.round(r.sp*100)+'%',
+    (r.acc*100).toFixed(2)+'%',
+    (r.f1*100).toFixed(2)+'%',
+    (r.drop >= 0 ? '+' : '') + r.drop.toFixed(4),
+    r.active, r.sparse_mb.toFixed(2), r.infer.toFixed(2),
+    r.drop <= MAX_DROP ? 'PASS' : 'FAIL'
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  navigator.clipboard.writeText(csv).then(() => {
+    const el = document.getElementById('copyMsg');
+    el.style.opacity = '1';
+    setTimeout(() => el.style.opacity = '0', 2000);
+  });
+}
+
+render();
+</script>

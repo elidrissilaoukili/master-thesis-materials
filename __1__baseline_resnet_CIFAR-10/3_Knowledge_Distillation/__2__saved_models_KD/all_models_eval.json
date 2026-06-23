@@ -1,0 +1,56 @@
+{
+  "1_student_resnet18_attention_layer3_beta100": {
+    "accuracy": 0.8952,
+    "precision": 0.8950574019199294,
+    "recall": 0.8952,
+    "f1": 0.8948705666383855,
+    "params": 11173962,
+    "params_nonzero": 11173962,
+    "sparsity_actual": 0.0,
+    "size_mb": 44.779531,
+    "flops_G": 1.115778048,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.9701,
+      "batch128_gpu_ms": 22.6307,
+      "per_img_gpu_ms": 0.1768,
+      "throughput_imgs_sec": 5656.0,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "2_student_resnet18_fitnet_layer3_beta100": {
+    "accuracy": 0.756,
+    "precision": 0.7532709748035602,
+    "recall": 0.756,
+    "f1": 0.7534722613667396,
+    "params": 11173962,
+    "params_nonzero": 11173962,
+    "sparsity_actual": 0.0,
+    "size_mb": 44.779147,
+    "flops_G": 1.115778048,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.8847,
+      "batch128_gpu_ms": 22.2905,
+      "per_img_gpu_ms": 0.1741,
+      "throughput_imgs_sec": 5742.3,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "3_student_resnet18_nst_layer3_beta100": {
+    "accuracy": 0.8859,
+    "precision": 0.8858681284326646,
+    "recall": 0.8859,
+    "f1": 0.885748976533592,
+    "params": 11173962,
+    "params_nonzero": 11173962,
+    "sparsity_actual": 0.0,
+    "size_mb": 44.778763,
+    "flops_G": 1.115778048,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.9048,
+      "batch128_gpu_ms": 22.6817,
+      "per_img_gpu_ms": 0.1772,
+      "throughput_imgs_sec": 5643.3,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  }
+}

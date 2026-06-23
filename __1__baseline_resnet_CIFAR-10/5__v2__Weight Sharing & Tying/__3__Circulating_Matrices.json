@@ -1,0 +1,67 @@
+{
+  "experiment": "weight_sharing_circulant",
+  "method": "weight_sharing",
+  "variant": "CirculantMatrices",
+  "original_arch": "resnet50",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "block_size": 8,
+  "finetune_epochs": 5,
+  "finetune_lr": 0.001,
+  "method_description": "Block-circulant weight compression (vectorized): each (8\u00d78) sub-block B of W replaced by circ(c) where c_k = (1/b)\u03a3\u1d62 B[i,(i+k)%b] (diagonal average = LS projection onto circulant subspace). Matrix padded to nearest multiple of b; all blocks extracted and projected in one batched reshape+gather+mean \u2014 no Python loops. Conv weights reshaped to 2-D (C_out, C_in\u00b7kH\u00b7kW) before compression. Eval-only weight cache; training rebuilds on every forward pass for correct autograd.",
+  "compression_time_s": 0.11,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    }
+  },
+  "accuracy": 0.8017,
+  "pre_finetune_accuracy": 0.1,
+  "accuracy_drop": 0.1303,
+  "finetune_epoch_accs": [
+    0.47698,
+    0.65312,
+    0.71962,
+    0.76912,
+    0.80362
+  ],
+  "precision": 0.801413,
+  "recall": 0.8017,
+  "f1": 0.800308,
+  "params": 2987914,
+  "original_params": 23520842,
+  "param_reduction_pct": 87.3,
+  "size_mb": 11.7505,
+  "original_size_mb": 90.0294,
+  "compression_ratio": 7.6618,
+  "flops_G": 0.003539,
+  "original_flops_G": 2.59566,
+  "flops_reduction_pct": 99.86,
+  "inference_ms": {
+    "single_img_gpu_ms": 4.1794,
+    "batch128_gpu_ms": 51.0722,
+    "per_img_gpu_ms": 0.399002,
+    "throughput_imgs_sec": 2506.26,
+    "timing_method": "CUDA events + torch.cuda.synchronize()"
+  },
+  "saved_model_path": "e:\\baseline_resnet50_cifar10\\5__v2__Weight Sharing & Tying\\__3__Circulating_Matrices.pth",
+  "status": "ok"
+}

@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "framework": "Structured Pruning Only",
+    "baseline_pth": "../__2__baseline_resnet50_cifar10.pth",
+    "channel_prune_ratio": 0.3,
+    "device": "cuda",
+    "seed": 42,
+    "finetune_epochs": 10,
+    "finetune_lr": 0.001,
+    "timing_config": {
+      "warmup_reps": 50,
+      "timed_reps": 500,
+      "cuda_sync": true
+    },
+    "structured_pruning_safety": "Only internal Bottleneck width (conv1\u2192conv2) is pruned. conv3, bn3, downsample untouched \u2014 residual shape safety guaranteed."
+  },
+  "results": {
+    "2_structured": {
+      "accuracy": 0.9317,
+      "precision": 0.9318865090273615,
+      "recall": 0.9317,
+      "f1": 0.9317118540510456,
+      "params_total": 18807394,
+      "params_nonzero": 18807394,
+      "sparsity_actual": 0.0,
+      "size_mb": 75.523059,
+      "size_mb_theoretical": 75.2296,
+      "flops_G": 2.068770816,
+      "inference_ms": 4.853368200012483,
+      "flops_note": "TRUE structured pruning: 30% of internal Bottleneck channels physically removed (conv1+bn1+conv2 per block). conv3, bn3, downsample untouched \u2014 residual shapes guaranteed. GFLOPs genuinely reduced; measured by thop on rebuilt model."
+    }
+  }
+}

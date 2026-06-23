@@ -1,0 +1,193 @@
+{
+  "_meta": {
+    "framework": "PFE Pruning Experiments v7",
+    "baseline_pth": "../__2__baseline_resnet50_cifar10.pth",
+    "sparsity_target": 0.5,
+    "channel_prune_ratio": 0.3,
+    "device": "cuda",
+    "seed": 42,
+    "baseline_epochs": 50,
+    "finetune_epochs": 10,
+    "finetune_lr": 0.001,
+    "iterative_ft_per_round": [
+      4,
+      3,
+      3
+    ],
+    "lth_train_epochs": 50,
+    "lth_retrain_epochs": 50,
+    "timing_config": {
+      "warmup_reps": 50,
+      "timed_reps": 500,
+      "cuda_sync": true,
+      "note": "All models timed in a single pass at end of script. torch.cuda.synchronize() before/after timed window. Mask-based methods have identical compute graphs to baseline \u2014 latency differences reflect measurement variance only."
+    },
+    "taxonomy": {
+      "mask_based": [
+        "1a_unstructured_noft",
+        "1b_unstructured_ft",
+        "3_magnitude",
+        "4_taylor_sensitivity",
+        "6_iterative",
+        "7_one_shot"
+      ],
+      "architecture_changing": [
+        "2_structured"
+      ],
+      "rewind_based": [
+        "5_lottery_ticket"
+      ]
+    },
+    "paired_comparisons": {
+      "threshold_scope_no_ft": "1a vs 7  \u2192 global vs per-layer threshold (both: no ft)",
+      "threshold_scope_with_ft": "1b vs 3  \u2192 global vs per-layer threshold (both: ft=Nep)",
+      "fine_tune_value": "7  vs 3  \u2192 no ft vs ft=Nep (both: per-layer L1)",
+      "criterion_quality": "3  vs 4  \u2192 L1 vs Taylor (both: per-layer, ft=Nep, same mask enforcement)",
+      "pruning_schedule": "3  vs 6  \u2192 one-shot vs iterative (both: per-layer L1, ft=Nep)",
+      "ft_value_global": "1a vs 1b \u2192 ft effect on global-pruned model"
+    },
+    "design_principles": {
+      "P1_one_variable": "Each paired comparison isolates exactly one variable. All other axes are controlled.",
+      "P2_budget_control": "All ft methods use exactly 10 total epochs @ lr=0.001. Iterative: [4, 3, 3] per round (sum=10). Iterative LR is constant (0.001) \u2014 no decay (FIX-F).",
+      "P3_lth_parity": "LTH \u03b8_T trained 50 epochs with lr=0.1, SGD, CosineAnnealingLR, ColorJitter \u2014 identical to baseline (FIX-C). Retrain 50 epochs with frozen mask.",
+      "P4_mask_scope": "LTH masks Conv2d+Linear weights only. BN affine excluded (small by normalization dynamics, not unimportance).",
+      "P5_timing": "All models timed in dedicated end-of-script pass with CUDA sync.",
+      "P6_augmentation_parity": "transform_train includes ColorJitter (brightness=0.2, contrast=0.2, saturation=0.2) \u2014 matches baseline augmentation exactly (FIX-B).",
+      "P7_optimizer_parity": "train_model uses SGD(lr=0.1, momentum=0.9, wd=5e-4) + CosineAnnealingLR \u2014 matches baseline optimizer exactly. fine_tune uses FINETUNE_LR=1e-3 (lower LR, standard for recovery)."
+    },
+    "complete_fix_history": {
+      "v3_FIX1_1vs7_distinct": "Method 7 uses per-layer (not global) threshold.",
+      "v3_FIX2_iterative_sparsity": "make_permanent() outside loop; sparsity reaches target.",
+      "v3_FIX3_taylor_naming": "Method 4 = Taylor Sensitivity, not Movement Pruning.",
+      "v4_FIXA_magnitude_ft": "Method 3 fine-tunes; was identical to Method 7.",
+      "v4_FIXB_lth_bn_mask": "LTH masks conv+linear only; BN rewound freely.",
+      "v4_FIXC_cuda_timing": "inference_ms uses torch.cuda.synchronize().",
+      "v5_FIXI_taylor_ft": "Method 4 fine-tunes matching Method 3's budget.",
+      "v5_FIXII_budget_control": "All ft methods use exactly 10 total epochs.",
+      "v5_FIXIII_lth_parity_doc": "LTH training budget documented vs baseline.",
+      "v5_FIXIV_mask_assertion": "get_conv_linear_weight_keys() asserts \u226550 keys.",
+      "v5_FIXV_method1b": "Method 1b (global+ft) added for clean threshold comparison.",
+      "v7_FIXA_baseline_epochs": "BASELINE_EPOCHS corrected to 50 (was 100 in v6, mismatching actual baseline checkpoint trained for 50 epochs).",
+      "v7_FIXB_colorjitter": "ColorJitter added to transform_train (brightness=0.2, contrast=0.2, saturation=0.2) matching baseline augmentation. Previously pruning fine-tuning and LTH retraining lacked ColorJitter, biasing all pruned models against the baseline.",
+      "v7_FIXC_lth_trajectory": "LTH \u03b8_T now trained 50 epochs (was 100) with lr=0.1, SGD, CosineAnnealingLR, ColorJitter \u2014 identical to baseline. Previously LTH used a different epoch count and augmentation, so the winning ticket did not reflect the true baseline loss landscape.",
+      "v7_FIXD_iterative_threshold": "Method 6 now uses per-layer l1_unstructured (not global_unstructured). Previously the 3 vs 6 comparison conflated schedule with threshold scope. Now the only variable is pruning schedule (one-shot vs iterative).",
+      "v7_FIXE_taylor_hook": "Method 4 now uses TaylorUnstructured custom prune hook. The binary mask is enforced on every forward pass during fine-tuning via the weight_orig/weight_mask reparametrization \u2014 same mechanism as l1_unstructured. Previously p.mul_() zeroed weights once, allowing fine-tuning to refill them (unfair vs Method 3).",
+      "v7_FIXF_iterative_lr": "Method 6 fine-tune LR is now constant (0.001) across all rounds. Previously LR decayed as FINETUNE_LR * 0.5^r, adding an extra confound to the 3 vs 6 schedule comparison."
+    },
+    "flops_note": "Mask-based: dense FLOPs unchanged (graph unmodified). Structured (#2): GFLOPs genuinely reduced, measured on rebuilt model. Cross-type FLOPs comparison is not apples-to-apples.",
+    "structured_pruning_safety": "Only internal Bottleneck width (conv1\u2192conv2) is pruned. conv3, bn3, downsample untouched \u2014 residual shape safety guaranteed."
+  },
+  "results": {
+    "1a_unstructured_noft": {
+      "accuracy": 0.932,
+      "precision": 0.9318602516928074,
+      "recall": 0.9319999999999998,
+      "f1": 0.9318784125744781,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.564184200018644,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Global L1 unstructured, no fine-tuning. Paired with 7_one_shot (per-layer threshold, no ft) to isolate threshold scope. Paired with 1b_unstructured_ft (same pruning, adds ft) to isolate ft value."
+    },
+    "1b_unstructured_ft": {
+      "accuracy": 0.9322,
+      "precision": 0.9323908451756999,
+      "recall": 0.9322000000000001,
+      "f1": 0.9322183215607479,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.567541599739343,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Global L1 unstructured + 10-epoch fine-tune @ lr=0.001. Paired with 1a (isolates ft value) and 3_magnitude (isolates threshold scope)."
+    },
+    "2_structured": {
+      "accuracy": 0.9322,
+      "precision": 0.9319539165932484,
+      "recall": 0.9321999999999999,
+      "f1": 0.93202216548087,
+      "params_total": 18807394,
+      "params_nonzero": 18807394,
+      "sparsity_actual": 0.0,
+      "size_mb": 75.523059,
+      "flops_G": 2.068770816,
+      "inference_ms": 4.528575399890542,
+      "flops_note": "TRUE structured pruning: 30% of internal Bottleneck channels physically removed (conv1+bn1+conv2 per block). conv3, bn3, downsample untouched \u2014 residual shapes guaranteed. GFLOPs genuinely reduced; measured by thop on rebuilt model."
+    },
+    "3_magnitude": {
+      "accuracy": 0.9323,
+      "precision": 0.9323039741725043,
+      "recall": 0.9323,
+      "f1": 0.9322759044162314,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.412995399907231,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Per-layer L1 magnitude pruning + 10-epoch fine-tune @ lr=0.001. Han et al. 2015. Central reference method."
+    },
+    "4_taylor_sensitivity": {
+      "accuracy": 0.9323,
+      "precision": 0.9323744469430384,
+      "recall": 0.9323,
+      "f1": 0.9322483458720789,
+      "params_total": 23520842,
+      "params_nonzero": 11628255,
+      "sparsity_actual": 0.5056191015610751,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.41745139984414,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Taylor first-order sensitivity (Molchanov et al. 2017). Importance = (1/N) \u03a3 |\u2202L/\u2202w \u00d7 w| over N=391 batches, normalized. Mask registered via TaylorUnstructured hook (same mechanism as l1_unstructured). Fine-tuned 10 epochs @ lr=0.001 (identical to Method 3). NOT movement pruning (Sanh et al. 2020)."
+    },
+    "5_lottery_ticket": {
+      "accuracy": 0.9354,
+      "precision": 0.9352024350407401,
+      "recall": 0.9353999999999999,
+      "f1": 0.9352245257619369,
+      "params_total": 23520842,
+      "params_nonzero": 11786968,
+      "sparsity_actual": 0.4988713414256173,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.433284600265324,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "lth_note": "LTH \u2014 Frankle & Carlin 2019. \u03b8\u2080 @ SEED=42. \u03b8_T: 50-epoch in-script training (lr=0.1, SGD, ColorJitter) matching baseline trajectory exactly (FIX-C). Global magnitude mask @ 50% on Conv2d+Linear weights only (P4). BN affine rewound to \u03b8\u2080, retrained freely. Ticket retrained 50 epochs with frozen mask."
+    },
+    "6_iterative": {
+      "accuracy": 0.9312,
+      "precision": 0.9311581788239932,
+      "recall": 0.9311999999999999,
+      "f1": 0.9310883664803782,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.363640999887139,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "3-round per-layer L1 iterative pruning (FIX-D: per-layer, not global). Per-round sparsity: 0.2063 (compounds to 50%). Fine-tune epochs: [4, 3, 3] per round (total=10). Fine-tune LR: 0.001 constant across rounds (FIX-F: no decay). Controlled budget: total ft = Methods 3 and 4 (10 ep). make_permanent() called once after all rounds (masks AND-accumulate)."
+    },
+    "7_one_shot": {
+      "accuracy": 0.9318,
+      "precision": 0.931472632848388,
+      "recall": 0.9318,
+      "f1": 0.9315545218036515,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.3970400001853704,
+      "flops_note": "Mask-based pruning \u2014 computation graph unchanged. Dense FLOPs identical to baseline. Effective FLOPs require sparse-kernel backend (e.g. DeepSparse).",
+      "method_note": "Per-layer L1, 50% sparsity, zero fine-tuning. Paired with 1a (global threshold, no ft) \u2192 isolates threshold scope. Paired with 3 (same criterion, ft=Nep) \u2192 isolates fine-tuning value."
+    }
+  }
+}

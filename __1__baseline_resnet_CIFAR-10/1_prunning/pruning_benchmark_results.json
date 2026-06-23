@@ -1,0 +1,144 @@
+{
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1_score": 0.931884,
+    "accuracy_drop": 0.0,
+    "params_total": 23520842,
+    "params_active": 23520842,
+    "model_size_mb": 90.0294,
+    "inference_time_ms": 748.8848,
+    "flops_active": 2595659776,
+    "sparsity": 0.0
+  },
+  "unstructured_pruning": {
+    "best_config": "sparsity=30%",
+    "config_detail": {
+      "target_sparsity": 0.3,
+      "criterion": "global_L1"
+    },
+    "accuracy": 0.9321,
+    "precision": 0.931969,
+    "recall": 0.9321,
+    "f1_score": 0.931987,
+    "accuracy_drop": -0.0001,
+    "params_total": 23520842,
+    "params_active": 16480528,
+    "model_size_mb": 62.8682,
+    "inference_time_ms": 797.2977,
+    "flops_active": 1875850369,
+    "sparsity": 0.3
+  },
+  "structured_pruning": {
+    "best_config": "filter_ratio=10%",
+    "config_detail": {
+      "filter_pruning_ratio": 0.1,
+      "criterion": "L1_filter_norm"
+    },
+    "accuracy": 0.9322,
+    "precision": 0.932111,
+    "recall": 0.9322,
+    "f1_score": 0.932104,
+    "accuracy_drop": -0.0002,
+    "params_total": 23520842,
+    "params_active": 21200808,
+    "model_size_mb": 80.8747,
+    "inference_time_ms": 826.6035,
+    "flops_active": 2343260160,
+    "sparsity": 0.0989
+  },
+  "magnitude_pruning": {
+    "best_config": "global_l1 @ 30%",
+    "config_detail": {
+      "sparsity": 0.3,
+      "criterion": "global_l1"
+    },
+    "accuracy": 0.9321,
+    "precision": 0.931969,
+    "recall": 0.9321,
+    "f1_score": 0.931987,
+    "accuracy_drop": -0.0001,
+    "params_total": 23520842,
+    "params_active": 16480528,
+    "model_size_mb": 62.8682,
+    "inference_time_ms": 788.1995,
+    "flops_active": 1875850369,
+    "sparsity": 0.3
+  },
+  "movement_pruning": {
+    "best_config": "sparsity=30%",
+    "config_detail": {
+      "target_sparsity": 0.3,
+      "calibration_batches": 10,
+      "scoring": "Taylor |w*grad|"
+    },
+    "accuracy": 0.928,
+    "precision": 0.92794,
+    "recall": 0.928,
+    "f1_score": 0.927868,
+    "accuracy_drop": 0.004,
+    "params_total": 23520842,
+    "params_active": 15989963,
+    "model_size_mb": 60.9969,
+    "inference_time_ms": 830.9859,
+    "flops_active": 1577367715,
+    "sparsity": 0.3209
+  },
+  "lottery_ticket": {
+    "best_config": "sparsity=30%",
+    "config_detail": {
+      "target_sparsity": 0.3,
+      "iterative_rounds": 5,
+      "ticket_type": "trained_weights_x_mask"
+    },
+    "accuracy": 0.9321,
+    "precision": 0.931969,
+    "recall": 0.9321,
+    "f1_score": 0.931987,
+    "accuracy_drop": -0.0001,
+    "params_total": 23520842,
+    "params_active": 21905088,
+    "model_size_mb": 83.5613,
+    "inference_time_ms": 770.1578,
+    "flops_active": 2401525710,
+    "sparsity": 0.0689
+  },
+  "iterative_pruning": {
+    "best_config": "sparsity=62.3%",
+    "config_detail": {
+      "cumulative_sparsity": 0.6228504508662795,
+      "step_per_round": 0.15,
+      "total_rounds_run": 15
+    },
+    "accuracy": 0.9322,
+    "precision": 0.932076,
+    "recall": 0.9322,
+    "f1_score": 0.932078,
+    "accuracy_drop": -0.0002,
+    "params_total": 23520842,
+    "params_active": 8903967,
+    "model_size_mb": 33.9659,
+    "inference_time_ms": 786.6395,
+    "flops_active": 979513770,
+    "sparsity": 0.6229
+  },
+  "oneshot_pruning": {
+    "best_config": "l1_global @ 30%",
+    "config_detail": {
+      "sparsity": 0.3,
+      "variant": "l1_global"
+    },
+    "accuracy": 0.9321,
+    "precision": 0.931969,
+    "recall": 0.9321,
+    "f1_score": 0.931987,
+    "accuracy_drop": -0.0001,
+    "params_total": 23520842,
+    "params_active": 16480528,
+    "model_size_mb": 62.8682,
+    "inference_time_ms": 789.012,
+    "flops_active": 1875850369,
+    "sparsity": 0.3
+  }
+}

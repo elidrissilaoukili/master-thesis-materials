@@ -1,0 +1,220 @@
+{
+  "method": "post_training_quantization",
+  "description": "PTQ: quantization applied after training with no gradient updates. Scale S and zero-point Z derived from calibration data. Three back-ends: dynamic (no calib), static FX sweep (4 observers), FX-graph with backend-tuned default qconfigs.",
+  "ptq_math": {
+    "quantize": "Q(x) = round(x / S) + Z",
+    "dequantize": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+    "error": "\u03b5 = x \u2212 x\u0302,  |\u03b5| \u2264 S/2",
+    "scale": "S = (x_max \u2212 x_min) / (2^b \u2212 1)",
+    "zero_point": "Z = round(\u2212x_min / S)",
+    "int8_levels": "2^8 \u2212 1 = 255",
+    "int4_levels": "2^4 \u2212 1 = 15",
+    "note": "INT8 works well with PTQ; INT4 degrades because 15 levels gives large S \u2192 large |\u03b5|, and errors accumulate through layers with no mechanism to correct them (that is QAT's job)."
+  },
+  "calibration_samples": 1024,
+  "calibration_batches": 8,
+  "target_dtype": "qint8 (weights) / quint8 (activations)",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 1.311594496,
+    "inference_ms": 4.578483581542969
+  },
+  "baseline_size_breakdown": {
+    "ram_fp32_mb": 89.7249,
+    "disk_pth_mb": 90.0509,
+    "inference_cpu_ms": 887.9295
+  },
+  "device": "cpu",
+  "best_config": {
+    "backend": "static_fx",
+    "observer": "minmax",
+    "accuracy": 0.9329,
+    "accuracy_drop": -0.0009,
+    "size_disk_mb": 22.9897,
+    "compression_ratio": 3.917
+  },
+  "results": [
+    {
+      "backend": "dynamic",
+      "observer": "per_channel_affine (runtime)",
+      "description": "Dynamic PTQ: only Linear weights quantized to qint8. S and Z computed on-the-fly per batch \u2014 no calibration data. Conv2d stays FP32. Fast to apply; no memory of x_min/x_max needed.",
+      "accuracy": 0.9319,
+      "precision": 0.931761,
+      "recall": 0.9319,
+      "f1": 0.931784,
+      "accuracy_drop": 0.0001,
+      "size_disk_mb": 89.9929,
+      "disk_saved_mb": 0.058,
+      "compression_ratio": 1.0006,
+      "inference_cpu_ms": 1394.7674,
+      "layers_quantized": "Linear only",
+      "calibration_samples": 0,
+      "quantization_formulas": {
+        "Q(x)": "round(x / S) + Z",
+        "x\u0302": "S \u00b7 (Q(x) \u2212 Z)",
+        "\u03b5": "|x \u2212 x\u0302| \u2264 S/2",
+        "S": "computed per-batch at runtime from weight range",
+        "dtype_w": "qint8  (8-bit signed integer)",
+        "dtype_acts": "float32 (not quantized)"
+      }
+    },
+    {
+      "backend": "static_fx",
+      "observer": "minmax",
+      "description": "Static PTQ (FX-graph, minmax): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+      "accuracy": 0.9329,
+      "precision": 0.932814,
+      "recall": 0.9329,
+      "f1": 0.932792,
+      "accuracy_drop": -0.0009,
+      "size_disk_mb": 22.9897,
+      "disk_saved_mb": 67.0612,
+      "compression_ratio": 3.917,
+      "inference_cpu_ms": 501.5468,
+      "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+      "calibration_samples": 1024,
+      "quantization_formulas": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)  [255 levels for INT8]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = round(x / S) + Z",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+        "max_err": "|\u03b5| \u2264 S/2  \u2192  smaller S = finer grid = less error",
+        "dtype_w": "qint8",
+        "dtype_act": "quint8"
+      }
+    },
+    {
+      "backend": "static_fx",
+      "observer": "moving_avg",
+      "description": "Static PTQ (FX-graph, moving_avg): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+      "accuracy": 0.9316,
+      "precision": 0.931433,
+      "recall": 0.9316,
+      "f1": 0.931469,
+      "accuracy_drop": 0.0004,
+      "size_disk_mb": 22.9897,
+      "disk_saved_mb": 67.0612,
+      "compression_ratio": 3.917,
+      "inference_cpu_ms": 457.7483,
+      "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+      "calibration_samples": 1024,
+      "quantization_formulas": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)  [255 levels for INT8]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = round(x / S) + Z",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+        "max_err": "|\u03b5| \u2264 S/2  \u2192  smaller S = finer grid = less error",
+        "dtype_w": "qint8",
+        "dtype_act": "quint8"
+      }
+    },
+    {
+      "backend": "static_fx",
+      "observer": "histogram",
+      "description": "Static PTQ (FX-graph, histogram): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+      "accuracy": 0.9315,
+      "precision": 0.931404,
+      "recall": 0.9315,
+      "f1": 0.931391,
+      "accuracy_drop": 0.0005,
+      "size_disk_mb": 22.9897,
+      "disk_saved_mb": 67.0612,
+      "compression_ratio": 3.917,
+      "inference_cpu_ms": 226.9191,
+      "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+      "calibration_samples": 1024,
+      "quantization_formulas": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)  [255 levels for INT8]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = round(x / S) + Z",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+        "max_err": "|\u03b5| \u2264 S/2  \u2192  smaller S = finer grid = less error",
+        "dtype_w": "qint8",
+        "dtype_act": "quint8"
+      }
+    },
+    {
+      "backend": "static_fx",
+      "observer": "percentile",
+      "description": "Static PTQ (FX-graph, percentile): graph-traced fusion of Conv-BN-ReLU and residual adds. S and Z calibrated from 1024 training images. Weights and activations quantized to INT8.",
+      "accuracy": 0.9321,
+      "precision": 0.931998,
+      "recall": 0.9321,
+      "f1": 0.931982,
+      "accuracy_drop": -0.0001,
+      "size_disk_mb": 22.9897,
+      "disk_saved_mb": 67.0612,
+      "compression_ratio": 3.917,
+      "inference_cpu_ms": 371.7654,
+      "layers_quantized": "Conv2d + Linear + residual adds (weights + activations)",
+      "calibration_samples": 1024,
+      "quantization_formulas": {
+        "S": "S = (x_max \u2212 x_min) / (2^8 \u2212 1)  [255 levels for INT8]",
+        "Z": "Z = round(\u2212x_min / S)",
+        "Q(x)": "Q(x) = round(x / S) + Z",
+        "x\u0302": "x\u0302 = S \u00b7 (Q(x) \u2212 Z)",
+        "max_err": "|\u03b5| \u2264 S/2  \u2192  smaller S = finer grid = less error",
+        "dtype_w": "qint8",
+        "dtype_act": "quint8"
+      }
+    },
+    {
+      "backend": "fx_static_x86",
+      "observer": "default_qconfig(x86)",
+      "description": "FX-graph static PTQ (backend=x86): torch.ao traces the computation graph, automatically fuses Conv-BN-ReLU and quantizes all eligible ops including residual adds. Same S/Z formulas as eager static; backend-tuned qconfig.",
+      "accuracy": 0.9321,
+      "precision": 0.931998,
+      "recall": 0.9321,
+      "f1": 0.931982,
+      "accuracy_drop": -0.0001,
+      "size_disk_mb": 22.9897,
+      "disk_saved_mb": 67.0612,
+      "compression_ratio": 3.917,
+      "inference_cpu_ms": 256.389,
+      "layers_quantized": "Conv2d + Linear + residual adds (auto-fused)",
+      "calibration_samples": 1024,
+      "quantization_formulas": {
+        "backend": "x86",
+        "fusion": "automatic via FX graph tracing",
+        "dtype": "qint8 (weights), quint8 (activations)",
+        "throughput": "INT8 VNNI ~4\u00d7 FP32 on AVX-512 CPUs"
+      }
+    },
+    {
+      "backend": "fx_static_fbgemm",
+      "observer": "default_qconfig(fbgemm)",
+      "description": "FX-graph static PTQ (backend=fbgemm): torch.ao traces the computation graph, automatically fuses Conv-BN-ReLU and quantizes all eligible ops including residual adds. Same S/Z formulas as eager static; backend-tuned qconfig.",
+      "accuracy": 0.9321,
+      "precision": 0.931998,
+      "recall": 0.9321,
+      "f1": 0.931982,
+      "accuracy_drop": -0.0001,
+      "size_disk_mb": 22.9897,
+      "disk_saved_mb": 67.0612,
+      "compression_ratio": 3.917,
+      "inference_cpu_ms": 259.5034,
+      "layers_quantized": "Conv2d + Linear + residual adds (auto-fused)",
+      "calibration_samples": 1024,
+      "quantization_formulas": {
+        "backend": "fbgemm",
+        "fusion": "automatic via FX graph tracing",
+        "dtype": "qint8 (weights), quint8 (activations)",
+        "throughput": "INT8 VNNI ~4\u00d7 FP32 on AVX-512 CPUs"
+      }
+    }
+  ],
+  "notes": {
+    "dynamic": "No calibration; Linear only; fastest to apply; Conv stays FP32",
+    "static_fx": "Calibration required; best INT8 accuracy; Conv-BN-ReLU auto-fused by FX",
+    "fx_default": "Backend-tuned qconfig; broadest op coverage; model must be torch.fx-traceable",
+    "gpu_note": "PyTorch static PTQ is CPU-only; GPU INT8 \u2192 TensorRT / ONNX Runtime",
+    "speedup_note": "INT8 ops ~2-4\u00d7 faster than FP32 on CPUs with AVX-512 VNNI support",
+    "vs_qat": "PTQ requires no retraining and is fast; QAT closes the accuracy gap at INT4 by inserting fake-quant nodes during training and using the STE trick.",
+    "disk_size_note": "disk_size_mb uses torch.save(model) (full model, not state_dict) to ensure INT8 tensor packing is preserved in the serialized file."
+  }
+}

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResNet-50 on CIFAR-10 (PyTorch)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+.math-container { background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 1.5rem; margin: 1.5rem 0; border-radius: 0.5rem; font-family: "Cambria Math", "Latin Modern Math", serif; }
+.code-block { background-color: #1e293b; color: #e2e8f0; padding: 1.5rem; border-radius: 0.5rem; font-family: "Courier New", monospace; overflow-x: auto; margin: 1rem 0; }
+.section-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.section-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+.equation { text-align: center; margin: 1.5rem 0; padding: 1rem; }
+.pipeline-step { position: relative; padding-left: 2.5rem; margin-bottom: 1rem; }
+.pipeline-step:before { content: ""; position: absolute; left: 0; top: 0.5rem; width: 1.5rem; height: 1.5rem; background-color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+.pipeline-step:nth-child(1):before { content: "1"; } .pipeline-step:nth-child(2):before { content: "2"; } .pipeline-step:nth-child(3):before { content: "3"; } .pipeline-step:nth-child(4):before { content: "4"; } .pipeline-step:nth-child(5):before { content: "5"; } .pipeline-step:nth-child(6):before { content: "6"; } .pipeline-step:nth-child(7):before { content: "7"; } .pipeline-step:nth-child(8):before { content: "8"; } .pipeline-step:nth-child(9):before { content: "9"; }
+.parameter-card { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 0.5rem; padding: 1rem; }
+</style>
+</head>
+<body class="bg-white text-gray-800">
+<!-- Header -->
+<header class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+<div class="container mx-auto px-6 py-8">
+<div class="flex flex-col md:flex-row justify-between items-center">
+<div>
+<h1 class="text-3xl md:text-4xl font-bold text-gray-900">ResNet-50 on CIFAR-10</h1>
+<p class="text-gray-600 mt-2">Mathematical Framework & Implementation Details</p>
+</div>
+<div class="mt-4 md:mt-0 flex items-center space-x-4">
+<span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full font-medium"> <i class="fas fa-robot mr-2"></i>Deep Learning </span>
+<span class="px-4 py-2 bg-green-100 text-green-800 rounded-full font-medium"> <i class="fas fa-calculator mr-2"></i>PyTorch </span>
+</div>
+</div>
+</div>
+</header>
+<main class="container mx-auto px-4 py-8">
+<!-- Personalized Developer Card -->
+<section class="mb-12">
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-8 border border-blue-100">
+<div class="flex flex-col md:flex-row items-center">
+<div class="md:w-1/4 mb-6 md:mb-0 flex justify-center">
+<div class="bg-gradient-to-br from-blue-500 to-purple-600 w-24 h-24 rounded-full flex items-center justify-center shadow-lg">
+<i class="fas fa-user-circle text-white text-4xl"></i>
+</div>
+</div>
+<div class="md:w-3/4 md:pl-8">
+<div class="flex items-center mb-4">
+<div class="bg-blue-100 p-2 rounded-lg mr-4">
+<i class="fas fa-code text-blue-600"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">Algorithm Developer</h2>
+</div>
+<div class="bg-white rounded-xl p-6 shadow-sm mb-6 border border-gray-200">
+<div class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center"><i class="fas fa-signature text-blue-500 mr-2"></i> Developer Name</div>
+<div class="text-3xl font-bold text-gray-900">Mohammed El Idrissi Laoukili</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center">
+<div class="text-sm text-gray-600 mb-1">Role</div>
+<div class="font-bold text-gray-900">ML Engineer</div>
+</div>
+<div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg text-center">
+<div class="text-sm text-gray-600 mb-1">Specialization</div>
+<div class="font-bold text-gray-900">Computer Vision</div>
+</div>
+<div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg text-center">
+<div class="text-sm text-gray-600 mb-1">Framework</div>
+<div class="font-bold text-gray-900">PyTorch</div>
+</div>
+<div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg text-center">
+<div class="text-sm text-gray-600 mb-1">Dataset</div>
+<div class="font-bold text-gray-900">CIFAR-10</div>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-gray-200 text-center text-gray-600">
+<p class="text-sm">Documentation prepared by <span class="font-semibold text-gray-900">El Idrissi Laoukili Mohammed</span></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 1: Setup & Configuration -->
+<section class="mb-12">
+<div class="flex items-center mb-6">
+<div class="bg-blue-100 p-3 rounded-lg mr-4">
+<i class="fas fa-cogs text-blue-600 text-xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">1. Setup & Configuration</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-seedling text-green-500 mr-2"></i>Reproducibility</h3>
+<p class="text-gray-600 mb-4">Set seeds for all random generators to ensure reproducible results:</p>
+<div class="code-block">
+SEED = 42<br />
+random.seed(SEED)<br />
+np.random.seed(SEED)<br />
+torch.manual_seed(SEED)<br />
+torch.cuda.manual_seed_all(SEED)
+</div>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-microchip text-purple-500 mr-2"></i>Hardware Configuration</h3>
+<p class="text-gray-600 mb-4">Automatically detect and use available GPU acceleration:</p>
+<div class="code-block">
+DEVICE = torch.device(<br />
+&nbsp;&nbsp;"cuda" if torch.cuda.is_available()<br />
+&nbsp;&nbsp;else "cpu"<br />
+)
+</div>
+</div>
+</div>
+<div class="mt-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-sliders-h text-orange-500 mr-2"></i>Hyperparameters</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+<div class="parameter-card">
+<div class="text-sm text-gray-500">IMG_SIZE</div>
+<div class="text-xl font-bold text-gray-900">32</div>
+<div class="text-xs text-gray-500">Input dimensions</div>
+</div>
+<div class="parameter-card">
+<div class="text-sm text-gray-500">BATCH_SIZE</div>
+<div class="text-xl font-bold text-gray-900">128</div>
+<div class="text-xs text-gray-500">Images per batch</div>
+</div>
+<div class="parameter-card">
+<div class="text-sm text-gray-500">EPOCHS</div>
+<div class="text-xl font-bold text-gray-900">40</div>
+<div class="text-xs text-gray-500">Training iterations</div>
+</div>
+<div class="parameter-card">
+<div class="text-sm text-gray-500">NUM_CLASSES</div>
+<div class="text-xl font-bold text-gray-900">10</div>
+<div class="text-xs text-gray-500">CIFAR Categories</div>
+</div>
+<div class="parameter-card">
+<div class="text-sm text-gray-500">LR</div>
+<div class="text-xl font-bold text-gray-900">0.1</div>
+<div class="text-xs text-gray-500">Learning rate (SGD)</div>
+</div>
+<div class="parameter-card">
+<div class="text-sm text-gray-500">MEAN/STD</div>
+<div class="text-xl font-bold text-gray-900">CIFAR Stats</div>
+<div class="text-xs text-gray-500">Normalization</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Data Pipeline -->
+<section class="mb-12">
+<div class="flex items-center mb-6">
+<div class="bg-green-100 p-3 rounded-lg mr-4">
+<i class="fas fa-database text-green-600 text-xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">2. Data Pipeline</h2>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6 mb-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4">Dataset: CIFAR-10</h3>
+<p class="text-gray-600 mb-4">Standard benchmark with 10 classes of 32x32 color images.</p>
+<div class="mb-6">
+<h4 class="font-semibold text-gray-800 mb-2">Data Splitting</h4>
+<div class="flex items-center justify-around mb-4">
+<div class="text-center">
+<div class="text-2xl font-bold text-blue-600">50k</div>
+<div class="text-sm text-gray-600">Training</div>
+</div>
+<div class="text-center">
+<div class="text-2xl font-bold text-purple-600">10k</div>
+<div class="text-sm text-gray-600">Test (Validation)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4">Image Transformations</h3>
+<div class="mb-4">
+<h4 class="font-semibold text-gray-700 mb-2 flex items-center"><i class="fas fa-random text-blue-500 mr-2"></i>Training Augmentations</h4>
+<ul class="space-y-2 text-gray-600">
+<li class="flex items-center"><i class="fas fa-expand-alt text-gray-400 mr-2"></i> Random Horizontal Flip</li>
+<li class="flex items-center"><i class="fas fa-crop text-gray-400 mr-2"></i> Random Crop (pad=4)</li>
+<li class="flex items-center"><i class="fas fa-palette text-gray-400 mr-2"></i> Color Jitter</li>
+<li class="flex items-center"><i class="fas fa-layer-group text-gray-400 mr-2"></i> Convert to tensor</li>
+<li class="flex items-center"><i class="fas fa-balance-scale text-gray-400 mr-2"></i> Normalize (CIFAR)</li>
+</ul>
+</div>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4">Normalization Mathematics</h3>
+<div class="math-container">
+<p class="text-gray-700 mb-3">For each channel \( c \in \{R, G, B\} \):</p>
+<div class="equation">\[ x_c^{\text{norm}} = \frac{x_c^{\text{raw}} - \text{MEAN}_c}{\text{STD}_c} \]</div>
+<p class="text-gray-700">Where \( \text{MEAN} \approx 0.49 \) and \( \text{STD} \approx 0.20 \).</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Model Architecture -->
+<section class="mb-12">
+<div class="flex items-center mb-6">
+<div class="bg-purple-100 p-3 rounded-lg mr-4">
+<i class="fas fa-network-wired text-purple-600 text-xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">3. Model Architecture</h2>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6 mb-6">
+<div class="flex flex-col md:flex-row items-center">
+<div class="md:w-1/3 mb-6 md:mb-0">
+<div class="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-6 text-center">
+<i class="fas fa-brain text-5xl text-purple-600 mb-4"></i>
+<h3 class="text-xl font-bold text-gray-900">ResNet-50</h3>
+<p class="text-gray-600">Pre-trained on ImageNet</p>
+</div>
+</div>
+<div class="md:w-2/3 md:pl-8">
+<h3 class="text-xl font-semibold text-gray-800 mb-4">Architecture Modification</h3>
+<p class="text-gray-600 mb-4">Adapted for 32x32 input: Conv1 stride 2→1, Remove MaxPool, FC head modified.</p>
+<div class="math-container">
+<div class="equation">\[ \text{fc}: \mathbb{R}^{2048} \rightarrow \mathbb{R}^{10} \]</div>
+<p class="text-center text-gray-700">Where 2048 is the original feature dimension.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center"><i class="fas fa-fire text-red-500 mr-2"></i>Loss Function: Cross-Entropy</h3>
+<div class="math-container">
+<div class="equation">\[ \mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N}\sum_{c=1}^{10}y_{i,c}\log(\hat{y}_{i,c}) \]</div>
+<div class="text-gray-700">
+<p class="mb-1">Where:</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>\( N \) = batch size</li>
+<li>\( y_{i,c} \) = one-hot encoded true label</li>
+<li>\( \hat{y}_{i,c} \) = predicted probability</li>
+<li>Label Smoothing = 0.1</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center"><i class="fas fa-tachometer-alt text-blue-500 mr-2"></i>Optimizer: SGD</h3>
+<div class="math-container">
+<div class="equation">\[ \theta_{t+1} = \theta_t - \eta \cdot \nabla_{\theta}\mathcal{L} \]</div>
+<div class="text-gray-700">
+<p class="mb-1">Where:</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>\( \eta = 0.1 \) (learning rate)</li>
+<li>Momentum = 0.9</li>
+<li>Weight Decay = 5e-4</li>
+<li>Scheduler: CosineAnnealingLR</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Training Algorithm -->
+<section class="mb-12">
+<div class="flex items-center mb-6">
+<div class="bg-orange-100 p-3 rounded-lg mr-4">
+<i class="fas fa-chart-line text-orange-600 text-xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">4. Training Algorithm</h2>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="text-center">
+<div class="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+<i class="fas fa-arrow-right text-blue-600 text-2xl"></i>
+</div>
+<h4 class="font-semibold text-gray-800 mb-2">Forward Pass</h4>
+<div class="equation">\[ \hat{y} = f_{\theta}(x) \]</div>
+<p class="text-sm text-gray-600">Model prediction</p>
+</div>
+<div class="text-center">
+<div class="bg-red-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+<i class="fas fa-calculator text-red-600 text-2xl"></i>
+</div>
+<h4 class="font-semibold text-gray-800 mb-2">Loss Computation</h4>
+<div class="equation">\[ \mathcal{L} = \text{CrossEntropy}(\hat{y}, y) \]</div>
+<p class="text-sm text-gray-600">Calculate error</p>
+</div>
+<div class="text-center">
+<div class="bg-green-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+<i class="fas fa-arrow-left text-green-600 text-2xl"></i>
+</div>
+<h4 class="font-semibold text-gray-800 mb-2">Backward Pass & Update</h4>
+<div class="equation">\[ \theta \leftarrow \theta - \eta \nabla_{\theta}\mathcal{L} \]</div>
+<p class="text-sm text-gray-600">Update parameters</p>
+</div>
+</div>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4">Evaluation Metrics</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
+<h4 class="font-bold text-gray-800 mb-2">Accuracy</h4>
+<div class="equation">\[ \text{Acc} = \frac{\text{Correct}}{\text{Total}} \]</div>
+</div>
+<div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
+<h4 class="font-bold text-gray-800 mb-2">Precision (macro)</h4>
+<div class="equation">\[ P = \frac{1}{10}\sum_{c=1}^{10}\frac{TP_c}{TP_c + FP_c} \]</div>
+</div>
+<div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-lg">
+<h4 class="font-bold text-gray-800 mb-2">Recall (macro)</h4>
+<div class="equation">\[ R = \frac{1}{10}\sum_{c=1}^{10}\frac{TP_c}{TP_c + FN_c} \]</div>
+</div>
+<div class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg">
+<h4 class="font-bold text-gray-800 mb-2">F1-Score</h4>
+<div class="equation">\[ F1 = 2 \cdot \frac{P \cdot R}{P + R} \]</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Prediction & Visualization -->
+<section class="mb-12">
+<div class="flex items-center mb-6">
+<div class="bg-pink-100 p-3 rounded-lg mr-4">
+<i class="fas fa-eye text-pink-600 text-xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">5. Prediction & Visualization</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center"><i class="fas fa-chart-bar text-red-500 mr-2"></i>Probability Distribution</h3>
+<p class="text-gray-600 mb-4">Visualizes softmax output probabilities for all 10 classes.</p>
+<div class="math-container">
+<p class="text-gray-700 mb-2">1. Softmax computation:</p>
+<div class="equation">\[ P(c|x) = \frac{e^{z_c}}{\sum_{j=1}^{10} e^{z_j}} \]</div>
+<p class="text-gray-700 text-sm">Where \( z_c \) = logits for class \( c \)</p>
+</div>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center"><i class="fas fa-image text-yellow-500 mr-2"></i>Inference Pipeline</h3>
+<p class="text-gray-600 mb-4">Processes custom images with consistent normalization.</p>
+<div class="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
+<p class="text-gray-700">
+<i class="fas fa-info-circle text-orange-500 mr-2"></i>
+Resizes to 32x32, applies CIFAR normalization, and displays top-3 predictions with confidence scores.
+</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 6: Complete Pipeline -->
+<section>
+<div class="flex items-center mb-6">
+<div class="bg-indigo-100 p-3 rounded-lg mr-4">
+<i class="fas fa-project-diagram text-indigo-600 text-xl"></i>
+</div>
+<h2 class="text-2xl font-bold text-gray-900">6. Complete Pipeline</h2>
+</div>
+<div class="section-card bg-white rounded-xl shadow-md p-6">
+<div class="space-y-4">
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Initialize</h4>
+<p class="text-gray-600">Set seeds (42), check GPU availability</p>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Build Model</h4>
+<p class="text-gray-600">Load ResNet-50, adapt Conv1/MaxPool/FC for CIFAR-10</p>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Prepare Data</h4>
+<p class="text-gray-600">Load CIFAR-10, apply augmentations and normalization</p>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Train Loop</h4>
+<div class="code-block mt-2">
+for epoch in range(EPOCHS):<br />
+&nbsp;&nbsp;train_epoch(model, loader)<br />
+&nbsp;&nbsp;val_acc = evaluate(model, test_loader)<br />
+&nbsp;&nbsp;scheduler.step()
+</div>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Evaluate</h4>
+<p class="text-gray-600">Compute metrics (Acc, Precision, Recall, F1), Confusion Matrix</p>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Profile</h4>
+<p class="text-gray-600">Calculate Params, FLOPs, Model Size, Inference Time</p>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Predict</h4>
+<p class="text-gray-600">Run inference on custom images/folders, save JSON results</p>
+</div>
+<div class="pipeline-step">
+<h4 class="font-semibold text-gray-800 mb-1">Save</h4>
+<p class="text-gray-600">Export weights, metrics JSON, and training plots</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-gray-50 border-t border-gray-200 mt-12">
+<div class="container mx-auto px-4 py-8">
+<div class="flex flex-col md:flex-row justify-between items-center">
+<div class="mb-4 md:mb-0">
+<h3 class="text-lg font-semibold text-gray-900">ResNet-50 CIFAR-10</h3>
+<p class="text-gray-600">Algorithm & Mathematical Framework</p>
+</div>
+<div class="flex space-x-6">
+<div class="text-center">
+<div class="text-2xl font-bold text-blue-600">10</div>
+<div class="text-sm text-gray-600">Classes</div>
+</div>
+<div class="text-center">
+<div class="text-2xl font-bold text-green-600">40</div>
+<div class="text-sm text-gray-600">Epochs</div>
+</div>
+<div class="text-center">
+<div class="text-2xl font-bold text-purple-600">SGD</div>
+<div class="text-sm text-gray-600">Optimizer</div>
+</div>
+</div>
+</div>
+<div class="text-center text-gray-500 text-sm mt-6 pt-6 border-t border-gray-200">
+<p>ResNet-50 Baseline. Based on CIFAR-10 dataset with adapted architecture.</p>
+</div>
+</div>
+</footer>
+<script>
+window.MathJax = {
+tex: {
+inlineMath: [["$", "$"], ["\\(", "\\)"]],
+displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+},
+svg: { fontCache: "global" },
+};
+</script>
+</body>
+</html>

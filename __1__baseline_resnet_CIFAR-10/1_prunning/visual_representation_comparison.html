@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Pruning Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg2: #f7f8fa;
+            --bg3: #f0f2f5;
+            --border: #e4e7ed;
+            --border2: #d1d5de;
+            --text: #111318;
+            --text2: #5a6378;
+            --text3: #9ba3b5;
+            --accent: #0a7c52;
+            --accent2: #0d9463;
+            --danger: #c0152a;
+            --warn: #b45c00;
+            --blue: #1a56c4;
+            --purple: #6d3fc4;
+            --mono: 'DM Mono', monospace;
+            --sans: 'Syne', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── Header ── */
+        .header {
+            padding: 32px 32px 0;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #f0f2f5 0%, var(--bg) 100%);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .title-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text2);
+            font-family: var(--mono);
+            margin-top: 2px;
+        }
+
+        .baseline-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bpill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        .bpill-label {
+            color: var(--text3);
+        }
+
+        .bpill-val {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* ── Nav tabs ── */
+        .nav {
+            display: flex;
+            gap: 0;
+            margin-top: 16px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 10px 18px;
+            font-family: var(--sans);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text2);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all .15s;
+            letter-spacing: .02em;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .nav-tab:hover {
+            color: var(--text);
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ── Main layout ── */
+        .main {
+            padding: 24px 32px;
+        }
+
+        /* ── Controls ── */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .ctrl-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ctrl-label {
+            font-size: 11px;
+            color: var(--text2);
+            font-family: var(--mono);
+        }
+
+        select {
+            font-family: var(--mono);
+            font-size: 11px;
+            background: var(--bg3);
+            color: var(--text);
+            border: 1px solid var(--border2);
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238892a4' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 24px;
+        }
+
+        .btn {
+            font-family: var(--mono);
+            font-size: 11px;
+            background: var(--bg3);
+            color: var(--text);
+            border: 1px solid var(--border2);
+            border-radius: 5px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .copy-toast {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity .4s;
+        }
+
+        .ml-auto {
+            margin-left: auto;
+        }
+
+        /* ── Table ── */
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        th {
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--text3);
+            text-align: left;
+            padding: 9px 12px;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            color: var(--text2);
+        }
+
+        th.sort-asc::after {
+            content: ' ↑';
+            color: var(--accent);
+        }
+
+        th.sort-desc::after {
+            content: ' ↓';
+            color: var(--accent);
+        }
+
+        td {
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr.data-row:hover td {
+            background: #f3f5f9;
+        }
+
+        tr.group-header td {
+            background: var(--bg2);
+            color: var(--text3);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr.baseline-row td {
+            background: #eef6f2;
+        }
+
+        /* ── Cell types ── */
+        .cell-mono {
+            font-family: var(--mono);
+        }
+
+        .cell-method {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .cell-dim {
+            color: var(--text2);
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        .cell-num {
+            font-family: var(--mono);
+            text-align: right;
+        }
+
+        .cell-gain {
+            color: var(--accent);
+            font-family: var(--mono);
+        }
+
+        .cell-loss {
+            color: var(--danger);
+            font-family: var(--mono);
+        }
+
+        .cell-warn {
+            color: var(--warn);
+            font-family: var(--mono);
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: var(--mono);
+            letter-spacing: .03em;
+        }
+
+        .pill-pass {
+            background: rgba(10, 124, 82, .1);
+            color: var(--accent);
+            border: 1px solid rgba(10, 124, 82, .25);
+        }
+
+        .pill-fail {
+            background: rgba(192, 21, 42, .08);
+            color: var(--danger);
+            border: 1px solid rgba(192, 21, 42, .2);
+        }
+
+        .pill-ref {
+            background: var(--bg3);
+            color: var(--text3);
+            border: 1px solid var(--border2);
+        }
+
+        .pill-variant {
+            background: rgba(26, 86, 196, .08);
+            color: var(--blue);
+            border: 1px solid rgba(26, 86, 196, .2);
+        }
+
+        .pill-crit {
+            background: rgba(109, 63, 196, .08);
+            color: var(--purple);
+            border: 1px solid rgba(109, 63, 196, .2);
+        }
+
+        /* ── Spark bar ── */
+        .bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bar-track {
+            flex: 1;
+            min-width: 48px;
+            height: 4px;
+            background: var(--bg3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width .3s;
+        }
+
+        .bar-pass {
+            background: var(--accent);
+        }
+
+        .bar-fail {
+            background: var(--danger);
+        }
+
+        .bar-ref {
+            background: var(--text3);
+        }
+
+        .bar-val {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text2);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* ── Detail panel (expandable row) ── */
+        tr.detail-row td {
+            padding: 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-panel {
+            padding: 16px 20px;
+            background: #f7f9fc;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .detail-key {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text3);
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .detail-val {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .detail-val.accent {
+            color: var(--accent);
+        }
+
+        .detail-val.danger {
+            color: var(--danger);
+        }
+
+        .expand-btn {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            border: 1px solid var(--border2);
+            background: var(--bg3);
+            color: var(--text2);
+            font-size: 10px;
+            transition: all .15s;
+            flex-shrink: 0;
+            font-family: var(--mono);
+        }
+
+        .expand-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .expand-btn.open {
+            background: rgba(10, 124, 82, .08);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Legend ── */
+        .legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text2);
+            font-family: var(--mono);
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .leg-sq {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        /* ── Summary cards ── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card-label {
+            font-size: 10px;
+            color: var(--text3);
+            font-family: var(--mono);
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .card-val {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -.02em;
+        }
+
+        .card-sub {
+            font-size: 11px;
+            color: var(--text2);
+            font-family: var(--mono);
+        }
+
+        /* ── View specific ── */
+        #view-overview .summary-grid {
+            display: grid;
+        }
+
+        .no-results {
+            padding: 40px;
+            text-align: center;
+            color: var(--text3);
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        /* ── Iterative trajectory chart ── */
+        .traj-wrap {
+            overflow-x: auto;
+        }
+
+        .traj-svg {
+            display: block;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <div class="header-title">
+                <div class="title-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1>Pruning Benchmark</h1>
+                    <div class="subtitle">ResNet-50 · CIFAR-10 · 7 methods · CUDA</div>
+                </div>
+            </div>
+            <div class="baseline-pills" id="baselinePills"></div>
+        </div>
+
+        <nav class="nav" id="mainNav">
+            <button class="nav-tab active" data-view="overview">Overview</button>
+            <button class="nav-tab" data-view="unstructured">Unstructured</button>
+            <button class="nav-tab" data-view="structured">Structured</button>
+            <button class="nav-tab" data-view="magnitude">Magnitude</button>
+            <button class="nav-tab" data-view="movement">Movement</button>
+            <button class="nav-tab" data-view="lottery">Lottery Ticket</button>
+            <button class="nav-tab" data-view="iterative">Iterative</button>
+            <button class="nav-tab" data-view="oneshot">One-Shot</button>
+        </nav>
+    </div>
+
+    <div class="main">
+        <div id="view-content"></div>
+    </div>
+
+    <script src="./all.json.js"></script>
+    <script>
+        // ────────────────────────────────────────────────
+        // DATA — from doc2 JS file, bugs fixed:
+        //   1. movement.notes typo ("otes:") corrected
+        //   2. lottery results: f1 → winning_ticket_f1
+        // ────────────────────────────────────────────────
+        // const DATA = {
+        //     unstructured: {
+        //         method: "unstructured_pruning",
+        //         description: "Global L1 unstructured pruning — individual weights zeroed",
+        //         pruning_granularity: "weight",
+        //         pruning_criterion: "L1 magnitude (|w|)",
+        //         baseline: { accuracy: 0.927, precision: 0.9270175401852601, recall: 0.9269999999999999, f1: 0.9269482877759729, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.335163116455078 },
+        //         baseline_size_breakdown: { dense_ram_mb: 89.7249, disk_pth_mb: 90.0294 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_sparsity: 0.7,
+        //         results: [
+        //             { target_sparsity: 0.3, actual_sparsity: 0.3, accuracy: 0.927, precision: 0.927033, recall: 0.927, f1: 0.926955, accuracy_drop: 0.0, params_total: 23520842, params_active: 16480528, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 62.8682, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.6789, inference_cpu_ms: 5806.0823 },
+        //             { target_sparsity: 0.5, actual_sparsity: 0.5, accuracy: 0.9271, precision: 0.927126, recall: 0.9271, f1: 0.927055, accuracy_drop: -0.0001, params_total: 23520842, params_active: 11786986, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 52.4675, inference_cpu_ms: 3287.9776 },
+        //             { target_sparsity: 0.7, actual_sparsity: 0.7, accuracy: 0.9276, precision: 0.927658, recall: 0.9276, f1: 0.927558, accuracy_drop: -0.0006, params_total: 23520842, params_active: 7093444, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 27.0593, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.0397, inference_cpu_ms: 3299.2508 },
+        //             { target_sparsity: 0.8, actual_sparsity: 0.8, accuracy: 0.9251, precision: 0.925305, recall: 0.9251, f1: 0.925042, accuracy_drop: 0.0019, params_total: 23520842, params_active: 4746672, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 18.1071, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 75.7153, inference_cpu_ms: 3274.3839 },
+        //             { target_sparsity: 0.9, actual_sparsity: 0.9, accuracy: 0.9094, precision: 0.911201, recall: 0.9094, f1: 0.909575, accuracy_drop: 0.0176, params_total: 23520842, params_active: 2399901, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 9.1549, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 52.7288, inference_cpu_ms: 3268.4341 }
+        //         ],
+        //         notes: {
+        //             size_dense_mb: "Full float32 RAM — never shrinks",
+        //             size_sparse_theoretical_mb: "active_params * 4B — sparse format lower bound",
+        //             size_disk_mb: "Actual .pth (compressed zip)",
+        //             gpu_speedup: "Dense CUDA does NOT skip zeros — no GPU speedup without cuSPARSE"
+        //         }
+        //     },
+
+        //     structured: {
+        //         method: "structured_pruning",
+        //         description: "L1 structured filter pruning — entire Conv2d output filters removed",
+        //         pruning_granularity: "filter (output channel, dim=0)",
+        //         pruning_criterion: "L1 norm of filter (sum of |w| per output filter)",
+        //         baseline: { accuracy: 0.932, precision: 0.9318626541334971, recall: 0.9319999999999998, f1: 0.9318835910591599, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.578483581542969 },
+        //         baseline_size_breakdown: { dense_ram_mb: 89.7249, disk_pth_mb: 90.0294 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_ratio: 0.1,
+        //         results: [
+        //             { filter_pruning_ratio: 0.1, structured_sparsity: 0.099, weight_sparsity: 0.0989, accuracy: 0.9322, precision: 0.932111, recall: 0.9322, f1: 0.932104, accuracy_drop: -0.0002, params_total: 23520842, params_active: 21200808, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 80.8747, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 221.2131, inference_cpu_ms: 3475.5928 },
+        //             { filter_pruning_ratio: 0.2, structured_sparsity: 0.199, weight_sparsity: 0.1989, accuracy: 0.931, precision: 0.931048, recall: 0.931, f1: 0.930961, accuracy_drop: 0.001, params_total: 23520842, params_active: 18852102, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 71.9151, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.4466, inference_cpu_ms: 3414.9131 },
+        //             { filter_pruning_ratio: 0.3, structured_sparsity: 0.299, weight_sparsity: 0.2984, accuracy: 0.9313, precision: 0.931521, recall: 0.9313, f1: 0.931253, accuracy_drop: 0.0007, params_total: 23520842, params_active: 16518729, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 63.014, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 299.1997, inference_cpu_ms: 3251.3643 },
+        //             { filter_pruning_ratio: 0.4, structured_sparsity: 0.399, weight_sparsity: 0.3985, accuracy: 0.9227, precision: 0.923856, recall: 0.9227, f1: 0.922834, accuracy_drop: 0.0093, params_total: 23520842, params_active: 14170023, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 54.0543, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.0766, inference_cpu_ms: 3353.3515 },
+        //             { filter_pruning_ratio: 0.5, structured_sparsity: 0.5, weight_sparsity: 0.4996, accuracy: 0.8734, precision: 0.887076, recall: 0.8734, f1: 0.874671, accuracy_drop: 0.0586, params_total: 23520842, params_active: 11797226, size_dense_mb: 89.7249, size_sparse_theoretical_mb: 45.0028, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 195.7928, inference_cpu_ms: 3324.7461 }
+        //         ],
+        //         notes: {
+        //             structured_sparsity: "Fraction of zero-norm filters in Conv2d layers",
+        //             weight_sparsity: "Fraction of zero weight values (all weights in zero filters)",
+        //             real_speedup: "Structured pruning CAN yield real speedup after model rebuild — zero-row Conv ops are skipped by cuDNN. PyTorch's prune API zeroes rows but keeps tensor shapes; rebuild for actual FLOP reduction.",
+        //             size_note: "Disk size compresses well due to zero-filter rows"
+        //         }
+        //     },
+
+        //     magnitude: {
+        //         method: "magnitude_pruning",
+        //         description: "Per-layer magnitude pruning comparing L1-local, L2-local, and global-L1",
+        //         pruning_granularity: "weight (unstructured)",
+        //         pruning_criteria: [
+        //             "local_l1 (per-layer L1)",
+        //             "local_l2 (per-layer L2^2)",
+        //             "global_l1 (all layers ranked together)"
+        //         ],
+        //         baseline: { accuracy: 0.932, precision: 0.9318626541334971, recall: 0.9319999999999998, f1: 0.9318835910591599, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.578483581542969 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_config: { sparsity: 0.3, criterion: "global_l1" },
+        //         results: [
+        //             { target_sparsity: 0.3, criterion: "local_l1", actual_sparsity: 0.3, accuracy: 0.9319, precision: 0.931712, recall: 0.9319, f1: 0.931759, accuracy_drop: 0.0001, params_total: 23520842, params_active: 16480530, size_sparse_theoretical_mb: 62.8682, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 57.9127, inference_cpu_ms: 5425.1179 },
+        //             { target_sparsity: 0.3, criterion: "local_l2", actual_sparsity: 0.3, accuracy: 0.9319, precision: 0.931712, recall: 0.9319, f1: 0.931759, accuracy_drop: 0.0001, params_total: 23520842, params_active: 16480553, size_sparse_theoretical_mb: 62.8683, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 53.2483, inference_cpu_ms: 3290.6214 },
+        //             { target_sparsity: 0.3, criterion: "global_l1", actual_sparsity: 0.3, accuracy: 0.9321, precision: 0.931969, recall: 0.9321, f1: 0.931987, accuracy_drop: -0.0001, params_total: 23520842, params_active: 16480528, size_sparse_theoretical_mb: 62.8682, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.0954, inference_cpu_ms: 3277.1548 },
+        //             { target_sparsity: 0.5, criterion: "local_l1", actual_sparsity: 0.5, accuracy: 0.9318, precision: 0.931473, recall: 0.9318, f1: 0.931555, accuracy_drop: 0.0002, params_total: 23520842, params_active: 11786986, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.014, inference_cpu_ms: 3267.0098 },
+        //             { target_sparsity: 0.5, criterion: "local_l2", actual_sparsity: 0.5, accuracy: 0.9318, precision: 0.931473, recall: 0.9318, f1: 0.931555, accuracy_drop: 0.0002, params_total: 23520842, params_active: 11786986, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 76.4604, inference_cpu_ms: 3233.5946 },
+        //             { target_sparsity: 0.5, criterion: "global_l1", actual_sparsity: 0.5, accuracy: 0.932, precision: 0.93186, recall: 0.932, f1: 0.931878, accuracy_drop: 0.0, params_total: 23520842, params_active: 11786986, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.0497, inference_cpu_ms: 3115.1571 },
+        //             { target_sparsity: 0.7, criterion: "local_l1", actual_sparsity: 0.7, accuracy: 0.9286, precision: 0.928269, recall: 0.9286, f1: 0.928109, accuracy_drop: 0.0034, params_total: 23520842, params_active: 7093442, size_sparse_theoretical_mb: 27.0593, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.962, inference_cpu_ms: 3128.8472 },
+        //             { target_sparsity: 0.7, criterion: "local_l2", actual_sparsity: 0.7, accuracy: 0.9286, precision: 0.928269, recall: 0.9286, f1: 0.928109, accuracy_drop: 0.0034, params_total: 23520842, params_active: 7093472, size_sparse_theoretical_mb: 27.0594, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9619, inference_cpu_ms: 3142.9595 },
+        //             { target_sparsity: 0.7, criterion: "global_l1", actual_sparsity: 0.7, accuracy: 0.9319, precision: 0.931749, recall: 0.9319, f1: 0.931752, accuracy_drop: 0.0001, params_total: 23520842, params_active: 7093444, size_sparse_theoretical_mb: 27.0593, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 106.0588, inference_cpu_ms: 3078.3612 },
+        //             { target_sparsity: 0.8, criterion: "local_l1", actual_sparsity: 0.8, accuracy: 0.9155, precision: 0.91625, recall: 0.9155, f1: 0.914683, accuracy_drop: 0.0165, params_total: 23520842, params_active: 4746674, size_sparse_theoretical_mb: 18.1071, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9118, inference_cpu_ms: 3307.7786 },
+        //             { target_sparsity: 0.8, criterion: "local_l2", actual_sparsity: 0.8, accuracy: 0.9154, precision: 0.916157, recall: 0.9154, f1: 0.914574, accuracy_drop: 0.0166, params_total: 23520842, params_active: 4746697, size_sparse_theoretical_mb: 18.1072, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9127, inference_cpu_ms: 3069.3876 },
+        //             { target_sparsity: 0.8, criterion: "global_l1", actual_sparsity: 0.8, accuracy: 0.9276, precision: 0.927693, recall: 0.9276, f1: 0.927507, accuracy_drop: 0.0044, params_total: 23520842, params_active: 4746672, size_sparse_theoretical_mb: 18.1071, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9577, inference_cpu_ms: 3108.3937 },
+        //             { target_sparsity: 0.9, criterion: "local_l1", actual_sparsity: 0.9, accuracy: 0.689, precision: 0.782957, recall: 0.689, f1: 0.690602, accuracy_drop: 0.243, params_total: 23520842, params_active: 2399899, size_sparse_theoretical_mb: 9.1549, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8749, inference_cpu_ms: 3466.0524 },
+        //             { target_sparsity: 0.9, criterion: "local_l2", actual_sparsity: 0.9, accuracy: 0.6888, precision: 0.782728, recall: 0.6888, f1: 0.690348, accuracy_drop: 0.2432, params_total: 23520842, params_active: 2399928, size_sparse_theoretical_mb: 9.155, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9332, inference_cpu_ms: 3260.5361 },
+        //             { target_sparsity: 0.9, criterion: "global_l1", actual_sparsity: 0.9, accuracy: 0.8774, precision: 0.88906, recall: 0.8774, f1: 0.878868, accuracy_drop: 0.0546, params_total: 23520842, params_active: 2399901, size_sparse_theoretical_mb: 9.1549, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8726, inference_cpu_ms: 3112.5039 }
+        //         ],
+        //         notes: {
+        //             local_l1: "Each layer independently pruned to target sparsity — uniform compression",
+        //             local_l2: "Each layer pruned by L2^2 score — prefers keeping large-magnitude weights",
+        //             global_l1: "All layers ranked together — important layers auto-protected",
+        //             comparison_insight: "Global L1 typically outperforms local methods at high sparsity"
+        //         }
+        //     },
+
+        //     movement: {
+        //         method: "movement_pruning",
+        //         description: "Movement pruning via Taylor importance |w*grad| — data-aware pruning",
+        //         pruning_granularity: "weight (unstructured)",
+        //         scoring_method: "Taylor first-order: |weight * gradient|",
+        //         calibration_batches: 10,
+        //         baseline: { accuracy: 0.932, precision: 0.9318626541334971, recall: 0.9319999999999998, f1: 0.9318835910591599, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.578483581542969 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_sparsity: 0.3,
+        //         results: [
+        //             { target_sparsity: 0.3, actual_sparsity: 0.3209, accuracy: 0.928, precision: 0.92794, recall: 0.928, f1: 0.927868, accuracy_drop: 0.004, params_total: 23520842, params_active: 15989963, size_sparse_theoretical_mb: 60.9969, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.5753, inference_cpu_ms: 3418.9204, calibration_batches_used: 10 },
+        //             { target_sparsity: 0.5, actual_sparsity: 0.5, accuracy: 0.9271, precision: 0.927032, recall: 0.9271, f1: 0.926943, accuracy_drop: 0.0049, params_total: 23520842, params_active: 11786986, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 1118.2021, inference_cpu_ms: 3362.2209, calibration_batches_used: 10 },
+        //             { target_sparsity: 0.7, actual_sparsity: 0.7, accuracy: 0.9222, precision: 0.922995, recall: 0.9222, f1: 0.922136, accuracy_drop: 0.0098, params_total: 23520842, params_active: 7093444, size_sparse_theoretical_mb: 27.0593, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9643, inference_cpu_ms: 3289.8048, calibration_batches_used: 10 },
+        //             { target_sparsity: 0.8, actual_sparsity: 0.8, accuracy: 0.895, precision: 0.900283, recall: 0.895, f1: 0.89551, accuracy_drop: 0.037, params_total: 23520842, params_active: 4746673, size_sparse_theoretical_mb: 18.1071, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8915, inference_cpu_ms: 3160.901, calibration_batches_used: 10 },
+        //             { target_sparsity: 0.9, actual_sparsity: 0.9, accuracy: 0.5335, precision: 0.767764, recall: 0.5335, f1: 0.518966, accuracy_drop: 0.3985, params_total: 23520842, params_active: 2399902, size_sparse_theoretical_mb: 9.1549, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 194.095, inference_cpu_ms: 3101.5054, calibration_batches_used: 10 }
+        //         ],
+        //         // FIX: was "otes:" (typo) in doc2 source
+        //         notes: {
+        //             theory: "True movement pruning trains soft masks alongside weights. Here we use Taylor importance (|w*grad|) as a one-shot post-training approximation.",
+        //             advantage_over_magnitude: "Data-aware — considers gradient signal, not just weight value. Small weights with large gradients are preserved.",
+        //             limitation: "One-shot Taylor approximation; full movement pruning requires training with soft masks (see Sanh et al. 2020)"
+        //         }
+        //     },
+
+        //     lottery: {
+        //         method: "lottery_ticket_hypothesis",
+        //         description: "LTH: iterative magnitude pruning to find ticket mask; compare trained-weights vs random-init",
+        //         pruning_granularity: "weight (unstructured)",
+        //         iterative_rounds: 5,
+        //         baseline: { accuracy: 0.932, precision: 0.9318626541334971, recall: 0.9319999999999998, f1: 0.9318835910591599, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.578483581542969 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_sparsity: 0.3,
+        //         results: [
+        //             // FIX: was f1: in doc2; corrected to winning_ticket_f1: to match rendering code
+        //             { target_sparsity: 0.3, actual_sparsity: 0.0689, iterative_rounds: 5, winning_ticket_accuracy: 0.9321, winning_ticket_precision: 0.931969, winning_ticket_recall: 0.9321, winning_ticket_f1: 0.931987, winning_ticket_accuracy_drop: -0.0001, random_init_accuracy: 0.1, random_init_accuracy_drop: 0.832, lth_advantage_pct: 83.21, params_total: 23520842, params_active: 21905088, size_sparse_theoretical_mb: 83.5613, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 193.9307, inference_cpu_ms: 3519.8752 },
+        //             { target_sparsity: 0.5, actual_sparsity: 0.1294, iterative_rounds: 5, winning_ticket_accuracy: 0.9321, winning_ticket_precision: 0.931969, winning_ticket_recall: 0.9321, winning_ticket_f1: 0.931987, winning_ticket_accuracy_drop: -0.0001, random_init_accuracy: 0.1, random_init_accuracy_drop: 0.832, lth_advantage_pct: 83.21, params_total: 23520842, params_active: 20482960, size_sparse_theoretical_mb: 78.1363, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 52.0958, inference_cpu_ms: 3371.8594 },
+        //             { target_sparsity: 0.7, actual_sparsity: 0.214, iterative_rounds: 5, winning_ticket_accuracy: 0.9321, winning_ticket_precision: 0.931969, winning_ticket_recall: 0.9321, winning_ticket_f1: 0.931987, winning_ticket_accuracy_drop: -0.0001, random_init_accuracy: 0.1, random_init_accuracy_drop: 0.832, lth_advantage_pct: 83.21, params_total: 23520842, params_active: 18498824, size_sparse_theoretical_mb: 70.5674, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 249.047, inference_cpu_ms: 3367.0707 },
+        //             { target_sparsity: 0.8, actual_sparsity: 0.2752, iterative_rounds: 5, winning_ticket_accuracy: 0.9321, winning_ticket_precision: 0.931969, winning_ticket_recall: 0.9321, winning_ticket_f1: 0.931987, winning_ticket_accuracy_drop: -0.0001, random_init_accuracy: 0.1175, random_init_accuracy_drop: 0.8145, lth_advantage_pct: 81.46, params_total: 23520842, params_active: 17062050, size_sparse_theoretical_mb: 65.0866, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 256.5479, inference_cpu_ms: 3325.454 },
+        //             { target_sparsity: 0.9, actual_sparsity: 0.369, iterative_rounds: 5, winning_ticket_accuracy: 0.9321, winning_ticket_precision: 0.931969, winning_ticket_recall: 0.9321, winning_ticket_f1: 0.931987, winning_ticket_accuracy_drop: -0.0001, random_init_accuracy: 0.1, random_init_accuracy_drop: 0.832, lth_advantage_pct: 83.21, params_total: 23520842, params_active: 14860255, size_sparse_theoretical_mb: 56.6874, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 61.7101, inference_cpu_ms: 3286.0964 }
+        //         ],
+        //         notes: {
+        //             winning_ticket: "Ticket mask + trained (θ_T) weights. Represents pruned baseline.",
+        //             random_init: "Same mask + kaiming-normal re-initialized weights. Control: untrained subnetwork.",
+        //             lth_advantage_pct: "Positive = trained weights preserve accuracy vs random init. Validates LTH.",
+        //             full_lth: "True LTH trains the re-initialized subnetwork; here we only evaluate it untrained as a demonstration.",
+        //             reference: "Frankle & Carlin (2019) https://arxiv.org/abs/1803.03635"
+        //         }
+        //     },
+
+        //     iterative: {
+        //         method: "iterative_pruning",
+        //         description: "Iterative L1 magnitude pruning: 15% of remaining weights per round",
+        //         pruning_granularity: "weight (unstructured, global L1)",
+        //         pruning_step: 0.15,
+        //         total_rounds: 15,
+        //         baseline: { accuracy: 0.932, precision: 0.9318626541334971, recall: 0.9319999999999998, f1: 0.9318835910591599, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.578483581542969 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_sparsity: 0.6229,
+        //         trajectory: [
+        //             { round: 1, pruning_step_fraction: 0.15, cumulative_sparsity: 0.15, accuracy: 0.9321, precision: 0.931969, recall: 0.9321, f1: 0.931987, accuracy_drop: -0.0001, params_total: 23520842, params_active: 20000686, size_sparse_theoretical_mb: 76.2966, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.3008, inference_cpu_ms: 6143.746 },
+        //             { round: 2, pruning_step_fraction: 0.15, cumulative_sparsity: 0.2775, accuracy: 0.9321, precision: 0.931969, recall: 0.9321, f1: 0.931987, accuracy_drop: -0.0001, params_total: 23520842, params_active: 17008553, size_sparse_theoretical_mb: 64.8825, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.0015, inference_cpu_ms: 3249.7135 },
+        //             { round: 3, pruning_step_fraction: 0.15, cumulative_sparsity: 0.3859, accuracy: 0.932, precision: 0.93187, recall: 0.932, f1: 0.931886, accuracy_drop: 0.0, params_total: 23520842, params_active: 14465239, size_sparse_theoretical_mb: 55.1805, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.1445, inference_cpu_ms: 3328.8828 },
+        //             { round: 4, pruning_step_fraction: 0.15, cumulative_sparsity: 0.478, accuracy: 0.9321, precision: 0.931962, recall: 0.9321, f1: 0.93198, accuracy_drop: -0.0001, params_total: 23520842, params_active: 12303423, size_sparse_theoretical_mb: 46.9338, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.1446, inference_cpu_ms: 3279.7643 },
+        //             { round: 5, pruning_step_fraction: 0.15, cumulative_sparsity: 0.5563, accuracy: 0.932, precision: 0.931863, recall: 0.932, f1: 0.931883, accuracy_drop: 0.0, params_total: 23520842, params_active: 10465879, size_sparse_theoretical_mb: 39.9242, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.1174, inference_cpu_ms: 3311.6608 },
+        //             { round: 6, pruning_step_fraction: 0.15, cumulative_sparsity: 0.6229, accuracy: 0.9322, precision: 0.932076, recall: 0.9322, f1: 0.932078, accuracy_drop: -0.0002, params_total: 23520842, params_active: 8903967, size_sparse_theoretical_mb: 33.9659, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 112.216, inference_cpu_ms: 3296.7424 },
+        //             { round: 7, pruning_step_fraction: 0.15, cumulative_sparsity: 0.6794, accuracy: 0.932, precision: 0.931827, recall: 0.932, f1: 0.931851, accuracy_drop: 0.0, params_total: 23520842, params_active: 7576341, size_sparse_theoretical_mb: 28.9014, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.0572, inference_cpu_ms: 3270.1927 },
+        //             { round: 8, pruning_step_fraction: 0.15, cumulative_sparsity: 0.7275, accuracy: 0.9313, precision: 0.931167, recall: 0.9313, f1: 0.931159, accuracy_drop: 0.0007, params_total: 23520842, params_active: 6447859, size_sparse_theoretical_mb: 24.5966, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.1588, inference_cpu_ms: 3278.0833 },
+        //             { round: 9, pruning_step_fraction: 0.15, cumulative_sparsity: 0.7684, accuracy: 0.9302, precision: 0.930126, recall: 0.9302, f1: 0.930067, accuracy_drop: 0.0018, params_total: 23520842, params_active: 5488650, size_sparse_theoretical_mb: 20.9375, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9542, inference_cpu_ms: 3129.8862 },
+        //             { round: 10, pruning_step_fraction: 0.15, cumulative_sparsity: 0.8031, accuracy: 0.9283, precision: 0.928397, recall: 0.9283, f1: 0.928199, accuracy_drop: 0.0037, params_total: 23520842, params_active: 4673322, size_sparse_theoretical_mb: 17.8273, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9289, inference_cpu_ms: 3124.721 },
+        //             { round: 11, pruning_step_fraction: 0.15, cumulative_sparsity: 0.8327, accuracy: 0.924, precision: 0.924727, recall: 0.924, f1: 0.924042, accuracy_drop: 0.008, params_total: 23520842, params_active: 3980293, size_sparse_theoretical_mb: 15.1836, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8718, inference_cpu_ms: 3125.5835 },
+        //             { round: 12, pruning_step_fraction: 0.15, cumulative_sparsity: 0.8578, accuracy: 0.9193, precision: 0.920636, recall: 0.9193, f1: 0.919437, accuracy_drop: 0.0127, params_total: 23520842, params_active: 3391219, size_sparse_theoretical_mb: 12.9365, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9088, inference_cpu_ms: 3103.9854 },
+        //             { round: 13, pruning_step_fraction: 0.15, cumulative_sparsity: 0.8791, accuracy: 0.9058, precision: 0.909335, recall: 0.9058, f1: 0.906272, accuracy_drop: 0.0262, params_total: 23520842, params_active: 2890506, size_sparse_theoretical_mb: 11.0264, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8462, inference_cpu_ms: 3101.739 },
+        //             { round: 14, pruning_step_fraction: 0.15, cumulative_sparsity: 0.8972, accuracy: 0.8838, precision: 0.893621, recall: 0.8838, f1: 0.885013, accuracy_drop: 0.0482, params_total: 23520842, params_active: 2464900, size_sparse_theoretical_mb: 9.4028, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9205, inference_cpu_ms: 3144.241 },
+        //             { round: 15, pruning_step_fraction: 0.15, cumulative_sparsity: 0.9126, accuracy: 0.8496, precision: 0.873072, recall: 0.8496, f1: 0.852351, accuracy_drop: 0.0824, params_total: 23520842, params_active: 2103135, size_sparse_theoretical_mb: 8.0228, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 102.0214, inference_cpu_ms: 3122.0633 }
+        //         ],
+        //         checkpointed_results: [
+        //             { round: 2, cumulative_sparsity: 0.2775, accuracy: 0.9321, f1: 0.931987, accuracy_drop: -0.0001, params_active: 17008553, size_sparse_theoretical_mb: 64.8825, checkpoint_target: 0.3 },
+        //             { round: 4, cumulative_sparsity: 0.478, accuracy: 0.9321, f1: 0.93198, accuracy_drop: -0.0001, params_active: 12303423, size_sparse_theoretical_mb: 46.9338, checkpoint_target: 0.5 },
+        //             { round: 7, cumulative_sparsity: 0.6794, accuracy: 0.932, f1: 0.931851, accuracy_drop: 0.0, params_active: 7576341, size_sparse_theoretical_mb: 28.9014, checkpoint_target: 0.7 },
+        //             { round: 10, cumulative_sparsity: 0.8031, accuracy: 0.9283, f1: 0.928199, accuracy_drop: 0.0037, params_active: 4673322, size_sparse_theoretical_mb: 17.8273, checkpoint_target: 0.8 },
+        //             { round: 14, cumulative_sparsity: 0.8972, accuracy: 0.8838, f1: 0.885013, accuracy_drop: 0.0482, params_active: 2464900, size_sparse_theoretical_mb: 9.4028, checkpoint_target: 0.9 }
+        //         ],
+        //         notes: {
+        //             trajectory: "Full pruning trajectory: accuracy at each incremental round",
+        //             advantage: "Reveals where accuracy begins to drop, not just final value",
+        //             vs_one_shot: "Compare with 7_oneshot_Pruning.json to see iterative vs one-shot difference",
+        //             step_formula: "Each round removes 15% of REMAINING non-zero weights (not of total)"
+        //         }
+        //     },
+
+        //     oneshot: {
+        //         method: "oneshot_pruning",
+        //         description: "One-shot pruning: target sparsity reached in a single step — no iteration",
+        //         pruning_granularity: "weight (unstructured, global)",
+        //         variants: ["oneshot_l1_global", "oneshot_l2_global", "oneshot_random"],
+        //         baseline: { accuracy: 0.932, precision: 0.9318626541334971, recall: 0.9319999999999998, f1: 0.9318835910591599, params: 23520842, size_mb: 94.408905, flops_G: 1.311594496, inference_ms: 4.578483581542969 },
+        //         device: "cuda",
+        //         max_acc_drop_threshold: 0.02,
+        //         best_config: { sparsity: 0.3, variant: "oneshot_l1_global" },
+        //         results: [
+        //             { target_sparsity: 0.3, variant: "oneshot_l1_global", actual_sparsity: 0.3, accuracy: 0.9321, precision: 0.931969, recall: 0.9321, f1: 0.931987, accuracy_drop: -0.0001, params_total: 23520842, params_active: 16480528, size_sparse_theoretical_mb: 62.8682, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 194.6976, inference_cpu_ms: 3495.346 },
+        //             { target_sparsity: 0.3, variant: "oneshot_random", actual_sparsity: 0.3, accuracy: 0.1001, precision: 0.110001, recall: 0.1001, f1: 0.018383, accuracy_drop: 0.8319, params_total: 23520842, params_active: 16480528, size_sparse_theoretical_mb: 62.8682, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 55.5177, inference_cpu_ms: 3350.3458 },
+        //             { target_sparsity: 0.5, variant: "oneshot_l1_global", actual_sparsity: 0.5, accuracy: 0.932, precision: 0.93186, recall: 0.932, f1: 0.931878, accuracy_drop: 0.0, params_total: 23520842, params_active: 11786986, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 206.405, inference_cpu_ms: 3290.7732 },
+        //             { target_sparsity: 0.5, variant: "oneshot_random", actual_sparsity: 0.5, accuracy: 0.1, precision: 0.01, recall: 0.1, f1: 0.018182, accuracy_drop: 0.832, params_total: 23520842, params_active: 11786986, size_sparse_theoretical_mb: 44.9638, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 51.003, inference_cpu_ms: 3263.4111 },
+        //             { target_sparsity: 0.7, variant: "oneshot_l1_global", actual_sparsity: 0.7, accuracy: 0.9319, precision: 0.931749, recall: 0.9319, f1: 0.931752, accuracy_drop: 0.0001, params_total: 23520842, params_active: 7093444, size_sparse_theoretical_mb: 27.0593, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 163.2746, inference_cpu_ms: 3313.0667 },
+        //             { target_sparsity: 0.7, variant: "oneshot_random", actual_sparsity: 0.7, accuracy: 0.1, precision: 0.01, recall: 0.1, f1: 0.018182, accuracy_drop: 0.832, params_total: 23520842, params_active: 7093444, size_sparse_theoretical_mb: 27.0593, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.9671, inference_cpu_ms: 3269.5682 },
+        //             { target_sparsity: 0.8, variant: "oneshot_l1_global", actual_sparsity: 0.8, accuracy: 0.9276, precision: 0.927693, recall: 0.9276, f1: 0.927507, accuracy_drop: 0.0044, params_total: 23520842, params_active: 4746672, size_sparse_theoretical_mb: 18.1071, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.929, inference_cpu_ms: 3109.8385 },
+        //             { target_sparsity: 0.8, variant: "oneshot_random", actual_sparsity: 0.8, accuracy: 0.1, precision: 0.01, recall: 0.1, f1: 0.018182, accuracy_drop: 0.832, params_total: 23520842, params_active: 4746672, size_sparse_theoretical_mb: 18.1071, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.908, inference_cpu_ms: 3104.3672 },
+        //             { target_sparsity: 0.9, variant: "oneshot_l1_global", actual_sparsity: 0.9, accuracy: 0.8774, precision: 0.88906, recall: 0.8774, f1: 0.878868, accuracy_drop: 0.0546, params_total: 23520842, params_active: 2399901, size_sparse_theoretical_mb: 9.1549, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8833, inference_cpu_ms: 3215.56 },
+        //             { target_sparsity: 0.9, variant: "oneshot_random", actual_sparsity: 0.9, accuracy: 0.1, precision: 0.01, recall: 0.1, f1: 0.018182, accuracy_drop: 0.832, params_total: 23520842, params_active: 2399901, size_sparse_theoretical_mb: 9.1549, size_disk_mb: 90.0294, disk_saved_mb: 0.0, inference_gpu_ms: 50.8289, inference_cpu_ms: 3127.0789 }
+        //         ],
+        //         notes: {
+        //             oneshot_l1_global: "Global L1 ranking, single pass — same as unstructured script",
+        //             oneshot_l2_global: "Global L2 (squared magnitude) ranking, single pass",
+        //             oneshot_random: "Randomly selected weights pruned — control baseline, worst accuracy",
+        //             vs_iterative: "Compare with 6_iterative_Pruning.json to see cost of one-shot vs iterative",
+        //             speed: "One-shot is extremely fast — no loops, single threshold computation"
+        //         }
+        //     }
+        // };
+
+
+
+        // ────────────────────────────────────────────────
+        // STATE
+        // ────────────────────────────────────────────────
+        let currentView = 'overview';
+        let openRows = new Set();
+
+        // ────────────────────────────────────────────────
+        // UTILS
+        // ────────────────────────────────────────────────
+        const fmt = {
+            pct: v => (v * 100).toFixed(2) + '%',
+            drop: v => { const s = v < 0 ? '' : (v === 0 ? '' : '+'); return s + v.toFixed(4); },
+            mb: v => v.toFixed(2),
+            ms: v => v.toFixed(1),
+            params: v => (v / 1e6).toFixed(2) + 'M',
+            sparsity: v => (v * 100).toFixed(1) + '%',
+            flops: v => v.toFixed(3) + ' G'
+        };
+
+        function dropClass(drop, thr) {
+            if (drop < 0) return 'cell-gain';
+            if (drop > thr) return 'cell-loss';
+            if (drop > thr * 0.75) return 'cell-warn';
+            return 'cell-gain';
+        }
+
+        function passLabel(drop, thr) {
+            return drop <= thr
+                ? '<span class="pill pill-pass">pass</span>'
+                : '<span class="pill pill-fail">fail</span>';
+        }
+
+        function sparkBar(val, max, pass) {
+            const w = Math.round((val / max) * 100);
+            const cls = pass ? 'bar-pass' : 'bar-fail';
+            return `<div class="bar-wrap">
+    <div class="bar-track"><div class="bar-fill ${cls}" style="width:${w}%"></div></div>
+    <span class="bar-val">${fmt.mb(val)}</span>
+  </div>`;
+        }
+
+        function fmtNotes(notes) {
+            if (!notes) return '—';
+            if (typeof notes === 'string') return notes;
+            return Object.entries(notes).map(([k, v]) => `<span style="color:var(--text3)">${k}:</span> ${v}`).join('<br>');
+        }
+
+        // ────────────────────────────────────────────────
+        // HEADER PILLS
+        // ────────────────────────────────────────────────
+        function renderBaselinePills() {
+            const b = DATA.unstructured.baseline;
+            document.getElementById('baselinePills').innerHTML = `
+    <div class="bpill"><span class="bpill-label">Baseline acc</span><span class="bpill-val">${fmt.pct(b.accuracy)}</span></div>
+    <div class="bpill"><span class="bpill-label">F1</span><span class="bpill-val">${b.f1.toFixed(4)}</span></div>
+    <div class="bpill"><span class="bpill-label">Params</span><span class="bpill-val">${fmt.params(b.params)}</span></div>
+    <div class="bpill"><span class="bpill-label">Size</span><span class="bpill-val">${b.size_mb.toFixed(1)} MB</span></div>
+    <div class="bpill"><span class="bpill-label">FLOPs</span><span class="bpill-val">${fmt.flops(b.flops_G)}</span></div>
+    <div class="bpill"><span class="bpill-label">Infer</span><span class="bpill-val">${b.inference_ms.toFixed(2)} ms</span></div>
+  `;
+        }
+
+        // ────────────────────────────────────────────────
+        // VIEWS ROUTER
+        // ────────────────────────────────────────────────
+        function renderView(view) {
+            currentView = view;
+            openRows.clear();
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+            const el = document.getElementById('view-content');
+            switch (view) {
+                case 'overview': el.innerHTML = buildOverview(); break;
+                case 'unstructured': el.innerHTML = buildStandard('unstructured'); break;
+                case 'structured': el.innerHTML = buildStructured(); break;
+                case 'magnitude': el.innerHTML = buildMagnitude(); break;
+                case 'movement': el.innerHTML = buildMovement(); break;
+                case 'lottery': el.innerHTML = buildLottery(); break;
+                case 'iterative': el.innerHTML = buildIterative(); break;
+                case 'oneshot': el.innerHTML = buildOneShot(); break;
+            }
+        }
+
+        // ── OVERVIEW ─────────────────────────────────────
+        function buildOverview() {
+            const passing = [
+                ...DATA.unstructured.results,
+                ...DATA.structured.results,
+                ...DATA.magnitude.results,
+                ...DATA.movement.results,
+                ...DATA.oneshot.results.filter(r => r.variant !== 'oneshot_random')
+            ].filter(r => r.accuracy_drop <= 0.02).length;
+
+            const cards = `<div class="summary-grid">
+    <div class="summary-card">
+      <div class="card-label">Methods benchmarked</div>
+      <div class="card-val" style="color:var(--blue)">7</div>
+      <div class="card-sub">across unstructured, structured, score-based</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Configs ≤2% drop</div>
+      <div class="card-val" style="color:var(--accent)">${passing}</div>
+      <div class="card-sub">passing threshold</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Best compression</div>
+      <div class="card-val" style="color:var(--accent)">70%</div>
+      <div class="card-sub">Unstructured / Magnitude — no accuracy loss</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Iterative best round</div>
+      <div class="card-val" style="color:var(--accent)">62.3%</div>
+      <div class="card-sub">Round 6 — tiny accuracy gain vs baseline</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">LTH advantage</div>
+      <div class="card-val" style="color:var(--purple)">+83.2%</div>
+      <div class="card-sub">trained vs random-init subnetwork</div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Baseline model</div>
+      <div class="card-val" style="color:var(--text2)">94.4 MB</div>
+      <div class="card-sub">ResNet-50 · float32 · 1.31G FLOPs</div>
+    </div>
+  </div>`;
+
+            const rows = [
+                { method: 'Unstructured', best_sp: '70%', best_drop: '-0.0006', best_acc: '92.76%', note: 'Acc gain at 70% — dense CUDA keeps tensor shape' },
+                { method: 'Structured', best_sp: '30%', best_drop: '+0.0007', best_acc: '93.13%', note: 'Real FLOP reduction possible after model rebuild' },
+                { method: 'Magnitude (global L1)', best_sp: '70%', best_drop: '+0.0001', best_acc: '93.19%', note: 'Global outperforms local at all sparsities' },
+                { method: 'Movement (Taylor)', best_sp: '—', best_drop: '+0.004', best_acc: '92.80%', note: 'Fails threshold at all sparsities — data-aware but noisy' },
+                { method: 'Lottery Ticket', best_sp: '~6.9%', best_drop: '-0.0001', best_acc: '93.21%', note: 'Validates LTH: +83.2% vs random init' },
+                { method: 'Iterative', best_sp: '62.3%', best_drop: '-0.0002', best_acc: '93.22%', note: 'Best overall — gradual pruning avoids cliff' },
+                { method: 'One-Shot (L1 global)', best_sp: '70%', best_drop: '+0.0001', best_acc: '93.19%', note: 'Matches magnitude; random variant collapses to chance' },
+            ];
+
+            let rowsHtml = rows.map(r => `<tr class="data-row">
+    <td class="cell-method">${r.method}</td>
+    <td class="cell-mono">${r.best_sp}</td>
+    <td class="cell-mono">${r.best_acc}</td>
+    <td class="cell-mono ${r.best_drop.startsWith('-') ? 'cell-gain' : 'cell-warn'}">${r.best_drop}</td>
+    <td style="color:var(--text2);font-size:11px">${r.note}</td>
+  </tr>`).join('');
+
+            return cards + `<div class="table-wrap"><table>
+    <thead><tr><th>Method</th><th>Best Sparsity</th><th>Accuracy</th><th>Acc Drop</th><th>Notes</th></tr></thead>
+    <tbody>${rowsHtml}</tbody>
+  </table></div>
+  <div class="legend">
+    <div class="leg"><div class="leg-sq" style="background:rgba(10,124,82,.15);border:1px solid var(--accent)"></div>Pass ≤2% drop</div>
+    <div class="leg"><div class="leg-sq" style="background:rgba(192,21,42,.12);border:1px solid var(--danger)"></div>Fail &gt;2% drop</div>
+  </div>`;
+        }
+
+        // ── STANDARD TABLE (unstructured, movement) ──────
+        function buildStandard(key) {
+            const d = DATA[key];
+            const thr = d.max_acc_drop_threshold;
+            const maxSparse = Math.max(...d.results.map(r => r.size_sparse_theoretical_mb));
+
+            const rows = d.results.map((r, i) => {
+                const pass = r.accuracy_drop <= thr;
+                const id = `${key}-${i}`;
+                const extraCols = key === 'movement'
+                    ? `<td class="cell-num cell-dim">${r.calibration_batches_used || '—'}</td>`
+                    : '';
+                const colspan = key === 'movement' ? 13 : 12;
+                return `
+    <tr class="data-row" style="cursor:pointer" onclick="toggleDetail('${id}')">
+      <td><span class="expand-btn" id="btn-${id}">+</span></td>
+      <td class="cell-mono">${fmt.sparsity(r.actual_sparsity)}</td>
+      <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+      <td class="cell-num">${fmt.pct(r.f1)}</td>
+      <td class="cell-num">${fmt.pct(r.precision)}</td>
+      <td class="cell-num">${fmt.pct(r.recall)}</td>
+      <td class="${dropClass(r.accuracy_drop, thr)}">${fmt.drop(r.accuracy_drop)}</td>
+      <td class="cell-num cell-dim">${fmt.params(r.params_active)}</td>
+      <td>${sparkBar(r.size_sparse_theoretical_mb, maxSparse, pass)}</td>
+      <td class="cell-num cell-dim">${fmt.ms(r.inference_gpu_ms)}</td>
+      <td class="cell-num cell-dim">${(r.inference_cpu_ms / 1000).toFixed(2)}s</td>
+      ${extraCols}
+      <td>${passLabel(r.accuracy_drop, thr)}</td>
+    </tr>
+    <tr class="detail-row" id="detail-${id}" style="display:none">
+      <td colspan="${colspan}">${buildStandardDetail(r, d.baseline, thr, key)}</td>
+    </tr>`;
+            });
+
+            const extraTh = key === 'movement' ? '<th>Calib.</th>' : '';
+            const criterionInfo = key === 'movement'
+                ? `Scoring: ${d.scoring_method} · Calibration batches: ${d.calibration_batches}`
+                : `Criterion: ${d.pruning_criterion}`;
+
+            return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${d.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Granularity: ${d.pruning_granularity} · ${criterionInfo}</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Actual Sparsity</th><th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
+      <th>Acc Drop</th><th>Active Params</th><th>Sparse MB</th>
+      <th>GPU ms</th><th>CPU</th>${extraTh}<th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(d.baseline)}${rows.join('')}</tbody>
+  </table></div>
+  ${buildNotesBox(d.notes)}${buildLegend()}`;
+        }
+
+        // ── STRUCTURED ────────────────────────────────────
+        function buildStructured() {
+            const d = DATA.structured;
+            const thr = d.max_acc_drop_threshold;
+            const maxSparse = Math.max(...d.results.map(r => r.size_sparse_theoretical_mb));
+
+            const rows = d.results.map((r, i) => {
+                const pass = r.accuracy_drop <= thr;
+                const id = `structured-${i}`;
+                return `
+    <tr class="data-row" style="cursor:pointer" onclick="toggleDetail('${id}')">
+      <td><span class="expand-btn" id="btn-${id}">+</span></td>
+      <td class="cell-mono">${(r.filter_pruning_ratio * 100).toFixed(0)}%</td>
+      <td class="cell-mono">${fmt.sparsity(r.structured_sparsity)}</td>
+      <td class="cell-mono">${fmt.sparsity(r.weight_sparsity)}</td>
+      <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+      <td class="cell-num">${fmt.pct(r.f1)}</td>
+      <td class="cell-num">${fmt.pct(r.precision)}</td>
+      <td class="cell-num">${fmt.pct(r.recall)}</td>
+      <td class="${dropClass(r.accuracy_drop, thr)}">${fmt.drop(r.accuracy_drop)}</td>
+      <td class="cell-num cell-dim">${fmt.params(r.params_active)}</td>
+      <td>${sparkBar(r.size_sparse_theoretical_mb, maxSparse, pass)}</td>
+      <td class="cell-num cell-dim">${fmt.ms(r.inference_gpu_ms)}</td>
+      <td>${passLabel(r.accuracy_drop, thr)}</td>
+    </tr>
+    <tr class="detail-row" id="detail-${id}" style="display:none">
+      <td colspan="13">${buildStructuredDetail(r, d.baseline, thr)}</td>
+    </tr>`;
+            });
+
+            return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${d.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Granularity: ${d.pruning_granularity} · Criterion: ${d.pruning_criterion}</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Filter Ratio</th><th>Struct. Sparsity</th><th>Weight Sparsity</th>
+      <th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
+      <th>Acc Drop</th><th>Active Params</th><th>Sparse MB</th><th>GPU ms</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(d.baseline, 13)}${rows.join('')}</tbody>
+  </table></div>
+  ${buildNotesBox(d.notes)}${buildLegend()}`;
+        }
+
+        // ── MAGNITUDE ─────────────────────────────────────
+        function buildMagnitude() {
+            const d = DATA.magnitude;
+            const thr = d.max_acc_drop_threshold;
+            const maxSparse = Math.max(...d.results.map(r => r.size_sparse_theoretical_mb));
+            const sparsities = [...new Set(d.results.map(r => r.target_sparsity))];
+
+            const rows = sparsities.map(sp => {
+                const group = d.results.filter(r => r.target_sparsity === sp);
+                const groupRows = group.map((r, gi) => {
+                    const pass = r.accuracy_drop <= thr;
+                    const id = `mag-${sp}-${gi}`;
+                    return `
+      <tr class="data-row" style="cursor:pointer" onclick="toggleDetail('${id}')">
+        <td><span class="expand-btn" id="btn-${id}">+</span></td>
+        <td><span class="pill pill-crit">${r.criterion}</span></td>
+        <td class="cell-mono">${fmt.sparsity(r.actual_sparsity)}</td>
+        <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+        <td class="cell-num">${fmt.pct(r.f1)}</td>
+        <td class="cell-num">${fmt.pct(r.precision)}</td>
+        <td class="cell-num">${fmt.pct(r.recall)}</td>
+        <td class="${dropClass(r.accuracy_drop, thr)}">${fmt.drop(r.accuracy_drop)}</td>
+        <td class="cell-num cell-dim">${fmt.params(r.params_active)}</td>
+        <td>${sparkBar(r.size_sparse_theoretical_mb, maxSparse, pass)}</td>
+        <td class="cell-num cell-dim">${fmt.ms(r.inference_gpu_ms)}</td>
+        <td class="cell-num cell-dim">${(r.inference_cpu_ms / 1000).toFixed(2)}s</td>
+        <td>${passLabel(r.accuracy_drop, thr)}</td>
+      </tr>
+      <tr class="detail-row" id="detail-${id}" style="display:none">
+        <td colspan="13">${buildStandardDetail(r, d.baseline, thr, 'magnitude')}</td>
+      </tr>`;
+                }).join('');
+                return `<tr class="group-header"><td colspan="13">Target sparsity ${fmt.sparsity(sp)}</td></tr>${groupRows}`;
+            }).join('');
+
+            return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${d.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Criteria: ${d.pruning_criteria.join(' · ')}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Best config: sparsity ${d.best_config.sparsity * 100}% with ${d.best_config.criterion}</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Criterion</th><th>Actual Sparsity</th><th>Accuracy</th><th>F1</th>
+      <th>Precision</th><th>Recall</th><th>Acc Drop</th>
+      <th>Active Params</th><th>Sparse MB</th><th>GPU ms</th><th>CPU</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(d.baseline, 13)}${rows}</tbody>
+  </table></div>
+  ${buildNotesBox(d.notes)}${buildLegend()}`;
+        }
+
+        // ── MOVEMENT ──────────────────────────────────────
+        function buildMovement() {
+            return buildStandard('movement');
+        }
+
+        // ── LOTTERY TICKET ────────────────────────────────
+        function buildLottery() {
+            const d = DATA.lottery;
+            const thr = d.max_acc_drop_threshold;
+            const maxSparse = Math.max(...d.results.map(r => r.size_sparse_theoretical_mb));
+
+            const rows = d.results.map((r, i) => {
+                const pass = r.winning_ticket_accuracy_drop <= thr;
+                const id = `lth-${i}`;
+                return `
+    <tr class="data-row" style="cursor:pointer" onclick="toggleDetail('${id}')">
+      <td><span class="expand-btn" id="btn-${id}">+</span></td>
+      <td class="cell-mono">${fmt.sparsity(r.target_sparsity)}</td>
+      <td class="cell-mono cell-dim">${fmt.sparsity(r.actual_sparsity)}</td>
+      <td class="cell-num">${fmt.pct(r.winning_ticket_accuracy)}</td>
+      <td class="cell-num">${r.winning_ticket_f1.toFixed(6)}</td>
+      <td class="${dropClass(r.winning_ticket_accuracy_drop, thr)}">${fmt.drop(r.winning_ticket_accuracy_drop)}</td>
+      <td class="cell-num" style="color:var(--danger)">${fmt.pct(r.random_init_accuracy)}</td>
+      <td class="cell-num cell-dim">${fmt.drop(r.random_init_accuracy_drop)}</td>
+      <td class="cell-num" style="color:var(--accent)">${r.lth_advantage_pct.toFixed(2)}%</td>
+      <td class="cell-num cell-dim">${fmt.params(r.params_active)}</td>
+      <td>${sparkBar(r.size_sparse_theoretical_mb, maxSparse, pass)}</td>
+      <td class="cell-num cell-dim">${fmt.ms(r.inference_gpu_ms)}</td>
+      <td>${passLabel(r.winning_ticket_accuracy_drop, thr)}</td>
+    </tr>
+    <tr class="detail-row" id="detail-${id}" style="display:none">
+      <td colspan="13">${buildLTHDetail(r, d.baseline, thr)}</td>
+    </tr>`;
+            });
+
+            return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${d.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Iterative rounds: ${d.iterative_rounds} · Frankle &amp; Carlin (2019) arXiv:1803.03635</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Target Sp.</th><th>Actual Sp.</th><th>Ticket Acc</th><th>Ticket F1</th>
+      <th>Ticket Drop</th><th>Random Acc</th><th>Random Drop</th><th>LTH Adv.</th>
+      <th>Active Params</th><th>Sparse MB</th><th>GPU ms</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(d.baseline, 13)}${rows.join('')}</tbody>
+  </table></div>
+  ${buildNotesBox(d.notes)}${buildLegend()}`;
+        }
+
+        // ── ITERATIVE ─────────────────────────────────────
+        function buildIterative() {
+            const d = DATA.iterative;
+            const thr = d.max_acc_drop_threshold;
+            const maxSparse = Math.max(...d.trajectory.map(r => r.size_sparse_theoretical_mb));
+
+            const rows = d.trajectory.map((r, i) => {
+                const pass = r.accuracy_drop <= thr;
+                const rowId = `iter-${i}`;
+                const isBest = r.round === 6;
+                return `
+    <tr class="data-row${isBest ? ' best-row' : ''}" style="cursor:pointer" onclick="toggleDetail('${rowId}')">
+      <td><span class="expand-btn" id="btn-${rowId}">+</span></td>
+      <td class="cell-mono" style="text-align:center">${r.round}${isBest ? ' ★' : ''}</td>
+      <td class="cell-mono">${(r.cumulative_sparsity * 100).toFixed(2)}%</td>
+      <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+      <td class="cell-num">${r.f1.toFixed(6)}</td>
+      <td class="cell-num">${fmt.pct(r.precision)}</td>
+      <td class="cell-num">${fmt.pct(r.recall)}</td>
+      <td class="${dropClass(r.accuracy_drop, thr)}">${fmt.drop(r.accuracy_drop)}</td>
+      <td class="cell-num cell-dim">${fmt.params(r.params_active)}</td>
+      <td>${sparkBar(r.size_sparse_theoretical_mb, maxSparse, pass)}</td>
+      <td class="cell-num cell-dim">${fmt.ms(r.inference_gpu_ms)}</td>
+      <td class="cell-num cell-dim">${(r.inference_cpu_ms / 1000).toFixed(2)}s</td>
+      <td>${passLabel(r.accuracy_drop, thr)}</td>
+    </tr>
+    <tr class="detail-row" id="detail-${rowId}" style="display:none">
+      <td colspan="13">${buildIterDetail(r, d.baseline, thr)}</td>
+    </tr>`;
+            });
+
+            return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${d.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Step: ${d.pruning_step * 100}% of remaining per round · ${d.total_rounds} rounds total · Best: round 6 @ 62.29% sparse</div>
+  </div>
+  ${buildTrajectoryChart(d.trajectory, thr)}
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Round</th><th>Cum. Sparsity</th><th>Accuracy</th><th>F1</th>
+      <th>Precision</th><th>Recall</th><th>Acc Drop</th>
+      <th>Active Params</th><th>Sparse MB</th><th>GPU ms</th><th>CPU</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(d.baseline, 13)}${rows.join('')}</tbody>
+  </table></div>
+  ${buildNotesBox(d.notes)}${buildLegend()}`;
+        }
+
+        // ── ONE-SHOT ──────────────────────────────────────
+        function buildOneShot() {
+            const d = DATA.oneshot;
+            const thr = d.max_acc_drop_threshold;
+            const maxSparse = Math.max(...d.results.map(r => r.size_sparse_theoretical_mb));
+            const sparsities = [...new Set(d.results.map(r => r.target_sparsity))];
+
+            const rows = sparsities.map(sp => {
+                const group = d.results.filter(r => r.target_sparsity === sp);
+                const groupRows = group.map((r, gi) => {
+                    const pass = r.accuracy_drop <= thr;
+                    const id = `oneshot-${sp}-${gi}`;
+                    return `
+      <tr class="data-row" style="cursor:pointer" onclick="toggleDetail('${id}')">
+        <td><span class="expand-btn" id="btn-${id}">+</span></td>
+        <td><span class="pill pill-variant">${r.variant}</span></td>
+        <td class="cell-mono">${fmt.sparsity(r.actual_sparsity)}</td>
+        <td class="cell-num">${fmt.pct(r.accuracy)}</td>
+        <td class="cell-num">${r.f1.toFixed(6)}</td>
+        <td class="cell-num">${fmt.pct(r.precision)}</td>
+        <td class="cell-num">${fmt.pct(r.recall)}</td>
+        <td class="${dropClass(r.accuracy_drop, thr)}">${fmt.drop(r.accuracy_drop)}</td>
+        <td class="cell-num cell-dim">${fmt.params(r.params_active)}</td>
+        <td>${sparkBar(r.size_sparse_theoretical_mb, maxSparse, pass)}</td>
+        <td class="cell-num cell-dim">${fmt.ms(r.inference_gpu_ms)}</td>
+        <td class="cell-num cell-dim">${(r.inference_cpu_ms / 1000).toFixed(2)}s</td>
+        <td>${passLabel(r.accuracy_drop, thr)}</td>
+      </tr>
+      <tr class="detail-row" id="detail-${id}" style="display:none">
+        <td colspan="13">${buildStandardDetail(r, d.baseline, thr, 'oneshot')}</td>
+      </tr>`;
+                }).join('');
+                return `<tr class="group-header"><td colspan="13">Target sparsity ${fmt.sparsity(sp)}</td></tr>${groupRows}`;
+            }).join('');
+
+            return `<div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:4px">${d.description}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Granularity: ${d.pruning_granularity} · Variants: ${d.variants.join(' · ')}</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Best: sparsity ${d.best_config.sparsity * 100}% with ${d.best_config.variant}</div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>Variant</th><th>Actual Sparsity</th><th>Accuracy</th><th>F1</th>
+      <th>Precision</th><th>Recall</th><th>Acc Drop</th>
+      <th>Active Params</th><th>Sparse MB</th><th>GPU ms</th><th>CPU</th><th>Pass</th>
+    </tr></thead>
+    <tbody>${buildBaselineRow(d.baseline, 13)}${rows}</tbody>
+  </table></div>
+  ${buildNotesBox(d.notes)}${buildLegend()}`;
+        }
+
+        // ────────────────────────────────────────────────
+        // DETAIL PANELS
+        // ────────────────────────────────────────────────
+        function detailPanel(items) {
+            return `<div class="detail-panel">${items.map(it => `
+    <div class="detail-item">
+      <span class="detail-key">${it.k}</span>
+      <span class="detail-val ${it.cls || ''}">${it.v}</span>
+    </div>`).join('')}</div>`;
+        }
+
+        function buildStandardDetail(r, baseline, thr, key) {
+            const paramReduction = ((1 - r.params_active / baseline.params) * 100).toFixed(1);
+            const compressionRatio = (baseline.size_mb / r.size_sparse_theoretical_mb).toFixed(2);
+            const items = [
+                { k: 'Target Sparsity', v: fmt.sparsity(r.target_sparsity) },
+                { k: 'Actual Sparsity', v: fmt.sparsity(r.actual_sparsity) },
+                { k: 'Accuracy', v: fmt.pct(r.accuracy) },
+                { k: 'F1 Score', v: r.f1.toFixed(6) },
+                { k: 'Precision', v: r.precision.toFixed(6) },
+                { k: 'Recall', v: r.recall.toFixed(6) },
+                { k: 'Accuracy Drop', v: fmt.drop(r.accuracy_drop), cls: r.accuracy_drop < 0 ? 'accent' : r.accuracy_drop > thr ? 'danger' : '' },
+                { k: 'Active Params', v: fmt.params(r.params_active) },
+                { k: 'Total Params', v: fmt.params(r.params_total) },
+                { k: 'Param Reduction', v: paramReduction + '%' },
+                { k: 'Sparse MB (theoretical)', v: fmt.mb(r.size_sparse_theoretical_mb) + ' MB' },
+                { k: 'Dense RAM MB', v: r.size_dense_mb ? fmt.mb(r.size_dense_mb) + ' MB' : '—' },
+                { k: 'Disk Size (.pth)', v: fmt.mb(r.size_disk_mb) + ' MB' },
+                { k: 'Disk Saved', v: fmt.mb(r.disk_saved_mb) + ' MB' },
+                { k: 'Compression Ratio', v: compressionRatio + '×' },
+                { k: 'GPU Inference', v: fmt.ms(r.inference_gpu_ms) + ' ms' },
+                { k: 'CPU Inference', v: (r.inference_cpu_ms / 1000).toFixed(3) + ' s' },
+            ];
+            if (r.calibration_batches_used !== undefined) items.push({ k: 'Calibration Batches', v: r.calibration_batches_used });
+            if (r.criterion) items.push({ k: 'Criterion', v: r.criterion });
+            if (r.variant) items.push({ k: 'Variant', v: r.variant });
+            return detailPanel(items);
+        }
+
+        function buildStructuredDetail(r, baseline, thr) {
+            const paramReduction = ((1 - r.params_active / baseline.params) * 100).toFixed(1);
+            const compressionRatio = (baseline.size_mb / r.size_sparse_theoretical_mb).toFixed(2);
+            const items = [
+                { k: 'Filter Pruning Ratio', v: (r.filter_pruning_ratio * 100).toFixed(0) + '%' },
+                { k: 'Structured Sparsity', v: fmt.sparsity(r.structured_sparsity) },
+                { k: 'Weight Sparsity', v: fmt.sparsity(r.weight_sparsity) },
+                { k: 'Accuracy', v: fmt.pct(r.accuracy) },
+                { k: 'F1 Score', v: r.f1.toFixed(6) },
+                { k: 'Precision', v: r.precision.toFixed(6) },
+                { k: 'Recall', v: r.recall.toFixed(6) },
+                { k: 'Accuracy Drop', v: fmt.drop(r.accuracy_drop), cls: r.accuracy_drop < 0 ? 'accent' : r.accuracy_drop > thr ? 'danger' : '' },
+                { k: 'Active Params', v: fmt.params(r.params_active) },
+                { k: 'Param Reduction', v: paramReduction + '%' },
+                { k: 'Sparse MB (theoretical)', v: fmt.mb(r.size_sparse_theoretical_mb) + ' MB' },
+                { k: 'Dense RAM MB', v: fmt.mb(r.size_dense_mb) + ' MB' },
+                { k: 'Disk Size (.pth)', v: fmt.mb(r.size_disk_mb) + ' MB' },
+                { k: 'Disk Saved', v: fmt.mb(r.disk_saved_mb) + ' MB' },
+                { k: 'Compression Ratio', v: compressionRatio + '×' },
+                { k: 'GPU Inference', v: fmt.ms(r.inference_gpu_ms) + ' ms' },
+                { k: 'CPU Inference', v: (r.inference_cpu_ms / 1000).toFixed(3) + ' s' },
+            ];
+            return detailPanel(items);
+        }
+
+        function buildLTHDetail(r, baseline, thr) {
+            const paramReduction = ((1 - r.params_active / baseline.params) * 100).toFixed(1);
+            const items = [
+                { k: 'Target Sparsity', v: fmt.sparsity(r.target_sparsity) },
+                { k: 'Actual Sparsity', v: fmt.sparsity(r.actual_sparsity) },
+                { k: 'Iterative Rounds', v: r.iterative_rounds },
+                { k: 'Ticket Accuracy', v: fmt.pct(r.winning_ticket_accuracy) },
+                { k: 'Ticket Precision', v: r.winning_ticket_precision.toFixed(6) },
+                { k: 'Ticket Recall', v: r.winning_ticket_recall.toFixed(4) },
+                { k: 'Ticket F1', v: r.winning_ticket_f1.toFixed(6) },
+                { k: 'Ticket Acc Drop', v: fmt.drop(r.winning_ticket_accuracy_drop), cls: r.winning_ticket_accuracy_drop < 0 ? 'accent' : '' },
+                { k: 'Random Init Accuracy', v: fmt.pct(r.random_init_accuracy), cls: 'danger' },
+                { k: 'Random Init Drop', v: fmt.drop(r.random_init_accuracy_drop), cls: 'danger' },
+                { k: 'LTH Advantage', v: r.lth_advantage_pct.toFixed(2) + '%', cls: 'accent' },
+                { k: 'Active Params', v: fmt.params(r.params_active) },
+                { k: 'Param Reduction', v: paramReduction + '%' },
+                { k: 'Sparse MB (theoretical)', v: fmt.mb(r.size_sparse_theoretical_mb) + ' MB' },
+                { k: 'Disk Size (.pth)', v: fmt.mb(r.size_disk_mb) + ' MB' },
+                { k: 'Disk Saved', v: fmt.mb(r.disk_saved_mb) + ' MB' },
+                { k: 'GPU Inference', v: fmt.ms(r.inference_gpu_ms) + ' ms' },
+                { k: 'CPU Inference', v: (r.inference_cpu_ms / 1000).toFixed(3) + ' s' },
+            ];
+            return detailPanel(items);
+        }
+
+        function buildIterDetail(r, baseline, thr) {
+            const paramReduction = ((1 - r.params_active / baseline.params) * 100).toFixed(1);
+            const items = [
+                { k: 'Round', v: r.round + ' / 15' },
+                { k: 'Pruning Step Fraction', v: (r.pruning_step_fraction * 100).toFixed(0) + '% of remaining' },
+                { k: 'Cumulative Sparsity', v: (r.cumulative_sparsity * 100).toFixed(2) + '%' },
+                { k: 'Accuracy', v: fmt.pct(r.accuracy) },
+                { k: 'F1 Score', v: r.f1.toFixed(6) },
+                { k: 'Precision', v: r.precision.toFixed(6) },
+                { k: 'Recall', v: r.recall.toFixed(4) },
+                { k: 'Accuracy Drop', v: fmt.drop(r.accuracy_drop), cls: r.accuracy_drop < 0 ? 'accent' : r.accuracy_drop > thr ? 'danger' : '' },
+                { k: 'Active Params', v: fmt.params(r.params_active) },
+                { k: 'Param Reduction', v: paramReduction + '%' },
+                { k: 'Sparse MB (theoretical)', v: fmt.mb(r.size_sparse_theoretical_mb) + ' MB' },
+                { k: 'Disk Size (.pth)', v: fmt.mb(r.size_disk_mb) + ' MB' },
+                { k: 'Disk Saved', v: fmt.mb(r.disk_saved_mb) + ' MB' },
+                { k: 'GPU Inference', v: fmt.ms(r.inference_gpu_ms) + ' ms' },
+                { k: 'CPU Inference', v: (r.inference_cpu_ms / 1000).toFixed(3) + ' s' },
+            ];
+            return detailPanel(items);
+        }
+
+        // ────────────────────────────────────────────────
+        // SHARED COMPONENTS
+        // ────────────────────────────────────────────────
+        function buildBaselineRow(b, cols = 12) {
+            return `<tr class="baseline-row">
+    <td colspan="${cols}" style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:7px 12px">
+      Baseline (unpruned) ·
+      Acc: <span style="color:var(--text)">${fmt.pct(b.accuracy)}</span> ·
+      F1: <span style="color:var(--text)">${b.f1.toFixed(6)}</span> ·
+      Precision: <span style="color:var(--text)">${b.precision.toFixed(6)}</span> ·
+      Recall: <span style="color:var(--text)">${b.recall.toFixed(4)}</span> ·
+      Params: <span style="color:var(--text)">${fmt.params(b.params)}</span> ·
+      Size: <span style="color:var(--text)">${b.size_mb.toFixed(2)} MB</span> ·
+      FLOPs: <span style="color:var(--text)">${fmt.flops(b.flops_G)}</span> ·
+      Infer: <span style="color:var(--text)">${b.inference_ms.toFixed(3)} ms</span>
+      &nbsp;<span class="pill pill-ref">ref</span>
+    </td>
+  </tr>`;
+        }
+
+        function buildNotesBox(notes) {
+            return `<div style="margin-top:14px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.8">
+    <span style="color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-size:9px;display:block;margin-bottom:6px">Notes</span>
+    ${fmtNotes(notes)}
+  </div>`;
+        }
+
+        function buildLegend() {
+            return `<div class="legend">
+    <div class="leg"><div class="leg-sq" style="background:rgba(10,124,82,.15);border:1px solid var(--accent)"></div>Pass — ≤2% accuracy drop</div>
+    <div class="leg"><div class="leg-sq" style="background:rgba(192,21,42,.12);border:1px solid var(--danger)"></div>Fail — &gt;2% drop</div>
+    <div class="leg"><span style="color:var(--accent);font-size:11px">−0.0006</span>&nbsp;gain</div>
+    <div class="leg"><span style="color:var(--danger);font-size:11px">+0.0175</span>&nbsp;loss</div>
+    <div class="leg" style="margin-left:auto;color:var(--text3)">Click any row to expand all fields</div>
+  </div>`;
+        }
+
+        // ── TRAJECTORY CHART ──────────────────────────────
+        function buildTrajectoryChart(traj, threshold) {
+            const W = 720, H = 140, PL = 48, PR = 16, PT = 12, PB = 28;
+            const cW = W - PL - PR, cH = H - PT - PB;
+            const minY = 0.84, maxY = 0.935;
+            function px(sp) { return PL + (sp / 1) * cW; }
+            function py(acc) { return PT + (1 - (acc - minY) / (maxY - minY)) * cH; }
+
+            const threshY = py(traj[0].accuracy - threshold);
+            const pathD = traj.map((r, i) => `${i === 0 ? 'M' : 'L'}${px(r.cumulative_sparsity).toFixed(1)},${py(r.accuracy).toFixed(1)}`).join(' ');
+            const xs = traj.map(r => r.cumulative_sparsity);
+            const areaD = pathD + ` L${px(xs[xs.length - 1]).toFixed(1)},${(PT + cH).toFixed(1)} L${px(xs[0]).toFixed(1)},${(PT + cH).toFixed(1)} Z`;
+            const dots = traj.map(r => {
+                const pass = r.accuracy_drop <= threshold;
+                return `<circle cx="${px(r.cumulative_sparsity).toFixed(1)}" cy="${py(r.accuracy).toFixed(1)}" r="3" fill="${pass ? 'var(--accent)' : 'var(--danger)'}" stroke="var(--bg)" stroke-width="1.5"/>`;
+            }).join('');
+
+            const xTicks = [0, 0.2, 0.4, 0.6, 0.8, 1.0].map(v => `
+    <line x1="${px(v)}" y1="${PT + cH}" x2="${px(v)}" y2="${PT + cH + 4}" stroke="var(--border2)" stroke-width="1"/>
+    <text x="${px(v)}" y="${PT + cH + 14}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="DM Mono,monospace">${Math.round(v * 100)}%</text>`).join('');
+
+            const yTicks = [0.85, 0.875, 0.90, 0.925].map(v => `
+    <line x1="${PL - 3}" y1="${py(v)}" x2="${W - PR}" y2="${py(v)}" stroke="var(--border)" stroke-width="0.5"/>
+    <text x="${PL - 6}" y="${py(v) + 3.5}" text-anchor="end" font-size="9" fill="var(--text3)" font-family="DM Mono,monospace">${(v * 100).toFixed(1)}</text>`).join('');
+
+            const bestR = traj[5];
+            const bx = px(bestR.cumulative_sparsity).toFixed(1);
+            const by = py(bestR.accuracy).toFixed(1);
+
+            return `<div class="traj-wrap" style="margin-bottom:20px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg2)">
+    <div style="padding:10px 16px 0;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Accuracy trajectory · 15 pruning rounds · 15% of remaining per step</div>
+    <svg class="traj-svg" viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.01"/>
+        </linearGradient>
+      </defs>
+      ${yTicks}${xTicks}
+      <line x1="${PL}" y1="${threshY.toFixed(1)}" x2="${W - PR}" y2="${threshY.toFixed(1)}" stroke="var(--danger)" stroke-width="0.75" stroke-dasharray="4,3" opacity="0.6"/>
+      <text x="${W - PR - 2}" y="${threshY - 3}" text-anchor="end" font-size="8" fill="var(--danger)" font-family="DM Mono,monospace" opacity="0.7">−2% threshold</text>
+      <path d="${areaD}" fill="url(#areaGrad)"/>
+      <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"/>
+      ${dots}
+      <circle cx="${bx}" cy="${by}" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.7"/>
+      <text x="${parseFloat(bx) + 7}" y="${parseFloat(by) + 3}" font-size="8" fill="var(--accent)" font-family="DM Mono,monospace">best (r6)</text>
+      <text x="${PL + cW / 2}" y="${H - 2}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="DM Mono,monospace">Cumulative Sparsity</text>
+      <text x="9" y="${PT + cH / 2}" text-anchor="middle" font-size="9" fill="var(--text3)" font-family="DM Mono,monospace" transform="rotate(-90,9,${PT + cH / 2})">Accuracy</text>
+    </svg>
+  </div>`;
+        }
+
+        // ────────────────────────────────────────────────
+        // ROW TOGGLE
+        // ────────────────────────────────────────────────
+        function toggleDetail(rowId) {
+            const row = document.getElementById(`detail-${rowId}`);
+            const btn = document.getElementById(`btn-${rowId}`);
+            if (!row) return;
+            const isOpen = openRows.has(rowId);
+            if (isOpen) {
+                row.style.display = 'none'; openRows.delete(rowId);
+                btn.textContent = '+'; btn.classList.remove('open');
+            } else {
+                row.style.display = ''; openRows.add(rowId);
+                btn.textContent = '−'; btn.classList.add('open');
+            }
+        }
+
+        // ────────────────────────────────────────────────
+        // NAV + INIT
+        // ────────────────────────────────────────────────
+        document.getElementById('mainNav').addEventListener('click', e => {
+            const tab = e.target.closest('.nav-tab');
+            if (tab) renderView(tab.dataset.view);
+        });
+
+        const style = document.createElement('style');
+        style.textContent = '.best-row td { background: rgba(10,124,82,.05) !important; }';
+        document.head.appendChild(style);
+
+        renderBaselinePills();
+        renderView('overview');
+    </script>
+</body>
+
+</html>

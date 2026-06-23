@@ -1,0 +1,130 @@
+{
+  "fp32_baseline": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.050925,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 5.3182,
+      "batch128_gpu_ms": 51.2365,
+      "per_img_gpu_ms": 0.4003,
+      "throughput_imgs_sec": 2498.2,
+      "timing_method": "CUDA events + torch.cuda.synchronize()",
+      "warmup_runs": 20,
+      "timing_runs": 50
+    }
+  },
+  "ort_minmax": {
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.176166,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.8922,
+      "batch128_gpu_ms": 64.0897,
+      "per_img_gpu_ms": 0.5007,
+      "throughput_imgs_sec": 1997.2,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 ORT session; NOT directly comparable to CUDA event timings",
+      "warmup_runs": 20,
+      "timing_runs": 50
+    },
+    "active_provider": "CUDAExecutionProvider",
+    "calib_method": "Minmax",
+    "calib_batches": 8,
+    "calib_images": 1024,
+    "size_note": "QDQ ONNX format adds QuantizeLinear/DequantizeLinear node pairs to the graph; file can be larger than FP32 torch.save \u2014 this is a serialization format artifact, not a real model size increase."
+  },
+  "ort_entropy": {
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.176166,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.9385,
+      "batch128_gpu_ms": 63.8727,
+      "per_img_gpu_ms": 0.499,
+      "throughput_imgs_sec": 2004.0,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 ORT session; NOT directly comparable to CUDA event timings",
+      "warmup_runs": 20,
+      "timing_runs": 50
+    },
+    "active_provider": "CUDAExecutionProvider",
+    "calib_method": "Entropy",
+    "calib_batches": 8,
+    "calib_images": 1024,
+    "size_note": "QDQ ONNX format adds QuantizeLinear/DequantizeLinear node pairs to the graph; file can be larger than FP32 torch.save \u2014 this is a serialization format artifact, not a real model size increase."
+  },
+  "ort_percentile": {
+    "accuracy": 0.9316,
+    "precision": 0.93151,
+    "recall": 0.9316,
+    "f1": 0.931494,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.176178,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.9533,
+      "batch128_gpu_ms": 63.8336,
+      "per_img_gpu_ms": 0.4987,
+      "throughput_imgs_sec": 2005.2,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 ORT session; NOT directly comparable to CUDA event timings",
+      "warmup_runs": 20,
+      "timing_runs": 50
+    },
+    "active_provider": "CUDAExecutionProvider",
+    "calib_method": "Percentile",
+    "calib_batches": 8,
+    "calib_images": 1024,
+    "size_note": "QDQ ONNX format adds QuantizeLinear/DequantizeLinear node pairs to the graph; file can be larger than FP32 torch.save \u2014 this is a serialization format artifact, not a real model size increase."
+  },
+  "_best_result": {
+    "method": "ort_minmax",
+    "accuracy": 0.9319,
+    "f1": 0.931794,
+    "acc_drop": 0.0001,
+    "size_mb": 90.176166,
+    "batch128_gpu_ms": 64.0897,
+    "throughput_imgs_sec": 1997.2,
+    "speedup_vs_fp32": 0.7994,
+    "flops_G": 2.595659776,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "active_provider": "CUDAExecutionProvider",
+    "selection_criterion": "lowest accuracy drop vs FP32 baseline; size_mb as tiebreaker",
+    "all_methods_accuracy": {
+      "ort_minmax": 0.9319,
+      "ort_entropy": 0.9319,
+      "ort_percentile": 0.9316
+    }
+  },
+  "_meta": {
+    "script": "GPU PTQ \u2014 ResNet-50 / CIFAR-10",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "cuda_version": "12.8",
+    "cudnn_version": "91900",
+    "batch_size": 128,
+    "calib_images": 1024,
+    "calib_batches": 8,
+    "inference_runs": 50,
+    "warmup_runs": 20,
+    "flops_tool": "manual",
+    "flops_note": "FLOPs identical for FP32 and INT8 \u2014 quantization changes dtype, not op count. GPU speedup from INT8 Tensor Cores.",
+    "timing_note": "PyTorch/TRT: CUDA events (accurate GPU-only). ORT: wall-clock (time.perf_counter) \u2014 NOT directly comparable. ORT timings include Python/CUDA synchronization overhead.",
+    "size_note": "PyTorch models: torch.save(model). ONNX: file size including QDQ graph metadata \u2014 can exceed FP32 torch.save size (format artifact, not real model size increase). TRT: serialized engine file.",
+    "calib_note": "Fix applied: each ORT calibration method uses a fresh DataLoader. Original code shared one iterator \u2014 entropy/percentile received 0 calibration batches, making all three methods effectively identical."
+  }
+}

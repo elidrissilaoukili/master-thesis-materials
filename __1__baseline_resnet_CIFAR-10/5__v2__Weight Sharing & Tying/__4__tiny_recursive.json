@@ -1,0 +1,129 @@
+{
+  "experiment": "weight_sharing_tiny_recursive",
+  "method": "weight_sharing",
+  "variant": "TinyRecursiveHyperNetwork",
+  "original_arch": "resnet50",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "embedding_dim": 16,
+  "hypernet_hidden": 128,
+  "hypernet_rank": 8,
+  "finetune_epochs": 5,
+  "finetune_lr": 0.001,
+  "method_description": "HyperNetwork (Ha et al. 2016) for ResNet50: a small MLP per stage maps block-index embeddings (dim=16) \u2192 low-rank weight factors (rank=8) via a hidden layer (dim=128). W_i = U_i @ V_i where U_i\u2208R^(C_out\u00d7r), V_i\u2208R^(r\u00d7C_in\u00b7kH\u00b7kW). Warm-started (200 SGD steps, MSE loss) before fine-tuning. Conv1, conv3, BN, downsample remain standard independent parameters.",
+  "stage_info": {
+    "layer1": {
+      "num_blocks": 3,
+      "conv2_shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "hypernet_params": 679216,
+      "original_params": 110592,
+      "param_reduction_pct": -514.16,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    },
+    "layer2": {
+      "num_blocks": 4,
+      "conv2_shape": [
+        128,
+        128,
+        3,
+        3
+      ],
+      "hypernet_params": 1339712,
+      "original_params": 589824,
+      "param_reduction_pct": -127.14,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    },
+    "layer3": {
+      "num_blocks": 6,
+      "conv2_shape": [
+        256,
+        256,
+        3,
+        3
+      ],
+      "hypernet_params": 2660704,
+      "original_params": 3538944,
+      "param_reduction_pct": 24.82,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    },
+    "layer4": {
+      "num_blocks": 3,
+      "conv2_shape": [
+        512,
+        512,
+        3,
+        3
+      ],
+      "hypernet_params": 5302576,
+      "original_params": 7077888,
+      "param_reduction_pct": 25.08,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    }
+  },
+  "compression_time_s": 4.32,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    }
+  },
+  "original_size_mb": 90.0294,
+  "original_params": 23520842,
+  "pre_finetune_accuracy": 0.2569,
+  "accuracy": 0.8861,
+  "precision": 0.886419,
+  "recall": 0.8861,
+  "f1": 0.885724,
+  "accuracy_drop": 0.0459,
+  "finetune_epoch_accs": [
+    0.82014,
+    0.8592,
+    0.88016,
+    0.89618,
+    0.90882
+  ],
+  "params": 22185802,
+  "param_reduction_pct": 5.68,
+  "size_mb": 84.9613,
+  "compression_ratio": 1.0597,
+  "flops_G": 1.465623,
+  "inference_ms": {
+    "single_img_gpu_ms": 9.8009,
+    "batch128_gpu_ms": 58.7412,
+    "per_img_gpu_ms": 0.458916,
+    "throughput_imgs_sec": 2179.05,
+    "timing_method": "CUDA events + torch.cuda.synchronize()"
+  },
+  "saved_model_path": "e:\\baseline_resnet50_cifar10\\5__v2__Weight Sharing & Tying\\__4__tiny_recursive.pth",
+  "status": "ok"
+}

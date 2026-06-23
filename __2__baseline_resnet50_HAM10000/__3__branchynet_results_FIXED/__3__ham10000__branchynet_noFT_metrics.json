@@ -1,0 +1,121 @@
+{
+  "accuracy": 0.8881677483774338,
+  "precision": 0.8389454056734463,
+  "recall": 0.845409807497145,
+  "f1": 0.840271264878157,
+  "params": 23624277,
+  "size_mb": 90.4359,
+  "flops_G": 8.174501,
+  "inference_ms": {
+    "gpu": {
+      "single_img_ms": 4.7708,
+      "batch128_ms": 1551.4826,
+      "per_img_ms": 12.121,
+      "throughput_imgs_sec": 82.5,
+      "timing_method": "sync+perf_counter (single), CUDA events (batch)"
+    }
+  },
+  "method": "early_exit",
+  "variant": "BranchyNet_ResNet50",
+  "dataset": "HAM10000",
+  "num_exits": 3,
+  "exit_positions": [
+    "after layer1 (256ch)",
+    "after layer2 (512ch)",
+    "final fc (2048ch)"
+  ],
+  "branch_weights": [
+    0.2,
+    0.3,
+    0.5
+  ],
+  "exit_thresholds_tested": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "inference_ms_adaptive_tau08": 3.4129,
+  "adaptive_threshold_results": [
+    {
+      "threshold": 0.5,
+      "accuracy": 0.801298,
+      "precision": 0.639918,
+      "recall": 0.725026,
+      "f1": 0.648566,
+      "frac_exit1": 0.655,
+      "frac_exit2": 0.1797,
+      "frac_exit3": 0.1653,
+      "avg_time_ms": 6.6603
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.835247,
+      "precision": 0.68781,
+      "recall": 0.760777,
+      "f1": 0.704351,
+      "frac_exit1": 0.5442,
+      "frac_exit2": 0.1667,
+      "frac_exit3": 0.2891,
+      "avg_time_ms": 6.5577
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.85971,
+      "precision": 0.741081,
+      "recall": 0.790182,
+      "f1": 0.755375,
+      "frac_exit1": 0.4543,
+      "frac_exit2": 0.1323,
+      "frac_exit3": 0.4134,
+      "avg_time_ms": 6.7352
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.881677,
+      "precision": 0.800971,
+      "recall": 0.830226,
+      "f1": 0.812233,
+      "frac_exit1": 0.3615,
+      "frac_exit2": 0.1143,
+      "frac_exit3": 0.5242,
+      "avg_time_ms": 6.8545
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.885671,
+      "precision": 0.832871,
+      "recall": 0.835358,
+      "f1": 0.831758,
+      "frac_exit1": 0.2751,
+      "frac_exit2": 0.1013,
+      "frac_exit3": 0.6236,
+      "avg_time_ms": 6.7729
+    },
+    {
+      "threshold": 0.95,
+      "accuracy": 0.888168,
+      "precision": 0.838107,
+      "recall": 0.840414,
+      "f1": 0.837378,
+      "frac_exit1": 0.1822,
+      "frac_exit2": 0.1058,
+      "frac_exit3": 0.7119,
+      "avg_time_ms": 6.9165
+    }
+  ],
+  "best_adaptive_result": {
+    "threshold": 0.95,
+    "accuracy": 0.888168,
+    "precision": 0.838107,
+    "recall": 0.840414,
+    "f1": 0.837378,
+    "frac_exit1": 0.1822,
+    "frac_exit2": 0.1058,
+    "frac_exit3": 0.7119,
+    "avg_time_ms": 6.9165
+  },
+  "saved_model_path": "e:\\baseline_resnet50_cifar10\\baseline_resnet50_HAM10000\\__3__branchynet_results_FIXED\\__ham10000__branchynet_resnet50.pth"
+}

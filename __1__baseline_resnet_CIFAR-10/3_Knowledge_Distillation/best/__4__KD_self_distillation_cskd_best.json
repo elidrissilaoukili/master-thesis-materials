@@ -1,0 +1,68 @@
+{
+  "method": "self_distillation_cskd_best",
+  "description": "CS-KD best config: tau=4.0, epochs=10 (no external teacher)",
+  "model_arch": "ResNet-50 (CIFAR-10 modified)",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "use_amp": true,
+  "kd_epochs": 10,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "baseline_model_info": {
+    "size_mb": 90.0251,
+    "params_nonzero": 23520842
+  },
+  "result": {
+    "sweep": "CS-KD",
+    "variant": "cskd",
+    "temperature": 4.0,
+    "epochs": 10,
+    "train_device": "cuda",
+    "use_amp": true,
+    "train_time_s": 478.75,
+    "epoch_train_acc": [
+      0.94592,
+      0.9422,
+      0.94814,
+      0.9534,
+      0.96486,
+      0.9724,
+      0.97966,
+      0.9847,
+      0.98918,
+      0.9912
+    ],
+    "accuracy": 0.9333,
+    "precision": 0.933332,
+    "recall": 0.9333,
+    "f1": 0.933246,
+    "accuracy_drop": -0.0013,
+    "params_nonzero": 23520842,
+    "size_mb": 90.0294,
+    "flops_G": 2.6232,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.1988,
+      "batch128_gpu_ms": 51.2579,
+      "per_img_gpu_ms": 0.4005,
+      "throughput_imgs_sec": 2497.2,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "peak_gpu_memory_mb": 1926.71,
+    "description": "CS-KD: tau=4.0, epochs=10",
+    "status": "ok"
+  }
+}

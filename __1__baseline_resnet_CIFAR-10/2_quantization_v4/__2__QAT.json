@@ -1,0 +1,303 @@
+{
+  "fp32_baseline": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.050925,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 14.0711,
+      "batch128_cpu_ms": 747.0966,
+      "per_img_cpu_ms": 5.8367,
+      "throughput_imgs_sec": 171.3,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+      "warmup_runs": 20,
+      "timing_runs": 100,
+      "label": "FP32-CPU-reference"
+    }
+  },
+  "minmax_constant": {
+    "obs_name": "minmax",
+    "lr_schedule": "constant",
+    "backend": "onednn-INT8-CPU",
+    "seed": 42,
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "compute_cap": "SM120",
+    "use_amp": true,
+    "qat_epochs": 3,
+    "observer_freeze_epoch": 1,
+    "train_time_s": 288.0,
+    "epoch_train_acc": [
+      0.9887,
+      0.98826,
+      0.98882
+    ],
+    "int8": {
+      "accuracy": 0.9316,
+      "precision": 0.931858,
+      "recall": 0.9316,
+      "f1": 0.931551,
+      "params": 23467712,
+      "params_nonzero": 20551332,
+      "size_mb": 22.989696,
+      "flops_G": 2.623188992,
+      "inference_ms": {
+        "single_img_cpu_ms": 5.2954,
+        "batch128_cpu_ms": 327.6371,
+        "per_img_cpu_ms": 2.5597,
+        "throughput_imgs_sec": 390.7,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "INT8-CPU"
+      }
+    },
+    "fp32_reference": {
+      "accuracy": 0.9309,
+      "precision": 0.931039,
+      "recall": 0.9309,
+      "f1": 0.930841,
+      "inference_ms": {
+        "single_img_cpu_ms": 14.0711,
+        "batch128_cpu_ms": 747.0966,
+        "per_img_cpu_ms": 5.8367,
+        "throughput_imgs_sec": 171.3,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "FP32-CPU-reference"
+      }
+    },
+    "acc_drop": 0.0004,
+    "size_fp32_mb": 90.050925,
+    "size_int8_mb": 22.989696,
+    "size_reduction_x": 3.917,
+    "int8_vs_fp32_speedup": 2.2803,
+    "saved_fakequant_pth": "__2__saved_models_QAT\\qat_fakequant_minmax_constant.pth",
+    "saved_int8_pth": "__2__saved_models_QAT\\qat_int8_minmax_constant.pth"
+  },
+  "moving_avg_constant": {
+    "obs_name": "moving_avg",
+    "lr_schedule": "constant",
+    "backend": "onednn-INT8-CPU",
+    "seed": 42,
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "compute_cap": "SM120",
+    "use_amp": true,
+    "qat_epochs": 3,
+    "observer_freeze_epoch": 1,
+    "train_time_s": 321.35,
+    "epoch_train_acc": [
+      0.98886,
+      0.9891,
+      0.9887
+    ],
+    "int8": {
+      "accuracy": 0.9308,
+      "precision": 0.930818,
+      "recall": 0.9308,
+      "f1": 0.930713,
+      "params": 23467712,
+      "params_nonzero": 20599536,
+      "size_mb": 22.989696,
+      "flops_G": 2.623188992,
+      "inference_ms": {
+        "single_img_cpu_ms": 5.3413,
+        "batch128_cpu_ms": 332.8998,
+        "per_img_cpu_ms": 2.6008,
+        "throughput_imgs_sec": 384.5,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "INT8-CPU"
+      }
+    },
+    "fp32_reference": {
+      "accuracy": 0.9312,
+      "precision": 0.931183,
+      "recall": 0.9312,
+      "f1": 0.931118,
+      "inference_ms": {
+        "single_img_cpu_ms": 14.0711,
+        "batch128_cpu_ms": 747.0966,
+        "per_img_cpu_ms": 5.8367,
+        "throughput_imgs_sec": 171.3,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "FP32-CPU-reference"
+      }
+    },
+    "acc_drop": 0.0012,
+    "size_fp32_mb": 90.050925,
+    "size_int8_mb": 22.989696,
+    "size_reduction_x": 3.917,
+    "int8_vs_fp32_speedup": 2.2442,
+    "saved_fakequant_pth": "__2__saved_models_QAT\\qat_fakequant_moving_avg_constant.pth",
+    "saved_int8_pth": "__2__saved_models_QAT\\qat_int8_moving_avg_constant.pth"
+  },
+  "minmax_cosine": {
+    "obs_name": "minmax",
+    "lr_schedule": "cosine",
+    "backend": "onednn-INT8-CPU",
+    "seed": 42,
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "compute_cap": "SM120",
+    "use_amp": true,
+    "qat_epochs": 3,
+    "observer_freeze_epoch": 1,
+    "train_time_s": 289.34,
+    "epoch_train_acc": [
+      0.98894,
+      0.98878,
+      0.98856
+    ],
+    "int8": {
+      "accuracy": 0.9309,
+      "precision": 0.930889,
+      "recall": 0.9309,
+      "f1": 0.930804,
+      "params": 23467712,
+      "params_nonzero": 20552451,
+      "size_mb": 22.989696,
+      "flops_G": 2.623188992,
+      "inference_ms": {
+        "single_img_cpu_ms": 5.1338,
+        "batch128_cpu_ms": 334.7167,
+        "per_img_cpu_ms": 2.615,
+        "throughput_imgs_sec": 382.4,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "INT8-CPU"
+      }
+    },
+    "fp32_reference": {
+      "accuracy": 0.9317,
+      "precision": 0.931526,
+      "recall": 0.9317,
+      "f1": 0.931551,
+      "inference_ms": {
+        "single_img_cpu_ms": 14.0711,
+        "batch128_cpu_ms": 747.0966,
+        "per_img_cpu_ms": 5.8367,
+        "throughput_imgs_sec": 171.3,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "FP32-CPU-reference"
+      }
+    },
+    "acc_drop": 0.0011,
+    "size_fp32_mb": 90.050925,
+    "size_int8_mb": 22.989696,
+    "size_reduction_x": 3.917,
+    "int8_vs_fp32_speedup": 2.232,
+    "saved_fakequant_pth": "__2__saved_models_QAT\\qat_fakequant_minmax_cosine.pth",
+    "saved_int8_pth": "__2__saved_models_QAT\\qat_int8_minmax_cosine.pth"
+  },
+  "minmax_step": {
+    "obs_name": "minmax",
+    "lr_schedule": "step",
+    "backend": "onednn-INT8-CPU",
+    "seed": 42,
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "compute_cap": "SM120",
+    "use_amp": true,
+    "qat_epochs": 3,
+    "observer_freeze_epoch": 1,
+    "train_time_s": 289.93,
+    "epoch_train_acc": [
+      0.98836,
+      0.98906,
+      0.98968
+    ],
+    "int8": {
+      "accuracy": 0.9313,
+      "precision": 0.931389,
+      "recall": 0.9313,
+      "f1": 0.931216,
+      "params": 23467712,
+      "params_nonzero": 20557572,
+      "size_mb": 22.989696,
+      "flops_G": 2.623188992,
+      "inference_ms": {
+        "single_img_cpu_ms": 5.5347,
+        "batch128_cpu_ms": 329.9888,
+        "per_img_cpu_ms": 2.578,
+        "throughput_imgs_sec": 387.9,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "INT8-CPU"
+      }
+    },
+    "fp32_reference": {
+      "accuracy": 0.9303,
+      "precision": 0.930398,
+      "recall": 0.9303,
+      "f1": 0.930213,
+      "inference_ms": {
+        "single_img_cpu_ms": 14.0711,
+        "batch128_cpu_ms": 747.0966,
+        "per_img_cpu_ms": 5.8367,
+        "throughput_imgs_sec": 171.3,
+        "timing_method": "wall-clock (time.perf_counter) \u2014 CPU only",
+        "warmup_runs": 20,
+        "timing_runs": 100,
+        "label": "FP32-CPU-reference"
+      }
+    },
+    "acc_drop": 0.0007,
+    "size_fp32_mb": 90.050925,
+    "size_int8_mb": 22.989696,
+    "size_reduction_x": 3.917,
+    "int8_vs_fp32_speedup": 2.264,
+    "saved_fakequant_pth": "__2__saved_models_QAT\\qat_fakequant_minmax_step.pth",
+    "saved_int8_pth": "__2__saved_models_QAT\\qat_int8_minmax_step.pth"
+  },
+  "_best_result": {
+    "config": "minmax_constant",
+    "obs_name": "minmax",
+    "lr_schedule": "constant",
+    "backend": "onednn-INT8-CPU",
+    "accuracy": 0.9316,
+    "f1": 0.931551,
+    "acc_drop": 0.0004,
+    "size_mb": 22.989696,
+    "size_reduction_x": 3.917,
+    "batch128_cpu_ms": 327.6371,
+    "throughput_imgs_sec": 390.7,
+    "int8_vs_fp32_speedup": 2.2803,
+    "flops_G": 2.623188992,
+    "params": 23467712,
+    "params_nonzero": 20551332,
+    "selection_criterion": "highest INT8 accuracy across all sweep configs",
+    "all_configs_accuracy": {
+      "minmax_constant": 0.9316,
+      "moving_avg_constant": 0.9308,
+      "minmax_cosine": 0.9309,
+      "minmax_step": 0.9313
+    }
+  },
+  "_meta": {
+    "script": "QAT \u2014 Real INT8 (onednn) \u2014 ResNet50 / CIFAR-10",
+    "seed": 42,
+    "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU",
+    "compute_cap": "SM120",
+    "use_amp": true,
+    "qat_epochs": 3,
+    "observer_freeze_epoch": 1,
+    "batch_size": 128,
+    "timing_runs": 100,
+    "warmup_runs": 20,
+    "flops_tool": "thop",
+    "flops_note": "FLOPs identical for FP32 and INT8 \u2014 quantization changes storage dtype, not arithmetic op count. INT8 CPU speedup comes from onednn VNNI/SIMD packing.",
+    "timing_note": "CPU-only evaluation. time.perf_counter() used throughout. FP32 reference timing measured once before sweep and shared across all configs for consistency.",
+    "size_note": "Both models serialized via torch.save(model) \u2014 full model including quantization config \u2014 for fair size comparison.",
+    "param_note": "Params measured on actual INT8 model using canonical two-path deduplication: id(p) for nn.Parameter, module-path key for FX callable weights."
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "experiment": "weight_sharing_tiny_recursive",
+  "method": "weight_sharing",
+  "variant": "TinyRecursiveHyperNetwork",
+  "original_arch": "resnet50",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "embedding_dim": 16,
+  "hypernet_hidden": 128,
+  "hypernet_rank": 8,
+  "finetune_epochs": 5,
+  "finetune_lr": 0.001,
+  "method_description": "HyperNetwork (Ha et al. 2016) for ResNet50: a small MLP per stage maps block-index embeddings (dim=16) \u2192 low-rank weight factors (rank=8) via a hidden layer (dim=128). W_i = U_i @ V_i where U_i\u2208R^(C_out\u00d7r), V_i\u2208R^(r\u00d7C_in\u00b7kH\u00b7kW). Warm-started (200 SGD steps, MSE loss) before fine-tuning. Conv1, conv3, BN, downsample remain standard independent parameters.",
+  "stage_info": {
+    "layer1": {
+      "num_blocks": 3,
+      "conv2_shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "hypernet_params": 679216,
+      "original_params": 110592,
+      "param_reduction_pct": -514.16,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    },
+    "layer2": {
+      "num_blocks": 4,
+      "conv2_shape": [
+        128,
+        128,
+        3,
+        3
+      ],
+      "hypernet_params": 1339712,
+      "original_params": 589824,
+      "param_reduction_pct": -127.14,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    },
+    "layer3": {
+      "num_blocks": 6,
+      "conv2_shape": [
+        256,
+        256,
+        3,
+        3
+      ],
+      "hypernet_params": 2660704,
+      "original_params": 3538944,
+      "param_reduction_pct": 24.82,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    },
+    "layer4": {
+      "num_blocks": 3,
+      "conv2_shape": [
+        512,
+        512,
+        3,
+        3
+      ],
+      "hypernet_params": 5302576,
+      "original_params": 7077888,
+      "param_reduction_pct": 25.08,
+      "embedding_dim": 16,
+      "hidden_dim": 128,
+      "rank": 8
+    }
+  },
+  "compression_time_s": 4.18,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 1.311594496,
+    "inference_ms": 4.578483581542969
+  },
+  "original_size_mb": 90.0294,
+  "original_params": 23520842,
+  "pre_finetune_accuracy": 0.2109,
+  "accuracy": 0.8846,
+  "precision": 0.884416,
+  "recall": 0.8846,
+  "f1": 0.884363,
+  "accuracy_drop": 0.0474,
+  "finetune_epoch_accs": [
+    0.81094,
+    0.85362,
+    0.8765,
+    0.89312,
+    0.9054
+  ],
+  "compressed_params": 22185802,
+  "param_reduction_pct": 5.68,
+  "size_disk_mb": 84.9613,
+  "compression_ratio": 1.0597,
+  "inference_ms": 57.0901,
+  "status": "ok"
+}

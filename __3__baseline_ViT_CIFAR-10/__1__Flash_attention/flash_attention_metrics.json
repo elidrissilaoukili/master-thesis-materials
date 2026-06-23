@@ -1,0 +1,94 @@
+{
+  "method": "flash_attention",
+  "description": "Flash Attention applied to a pretrained ViT (vit_small patch4 32\u00d732). Same weights, same architecture, only the attention computation kernel is replaced.",
+  "key_properties": {
+    "mathematically_equivalent": true,
+    "weights_modified": false,
+    "retraining_required": false,
+    "architecture_changed": false,
+    "attention_blocks_replaced": 12
+  },
+  "flash_attention_mechanism": {
+    "standard_complexity": "O(N^2) HBM reads/writes for N\u00d7N attention matrix",
+    "flash_complexity": "O(N^2/B) HBM reads/writes \u2014 N\u00d7N matrix stays in SRAM",
+    "pytorch_dispatch": "torch.nn.functional.scaled_dot_product_attention",
+    "kernel_on_ampere": "FlashAttention-2",
+    "kernel_on_older_gpu": "Efficient CUDA attention kernel",
+    "kernel_on_cpu": "Standard math (reference, numerically identical)",
+    "softmax": "Incremental online normalisation (numerically stable)"
+  },
+  "standard_vit": {
+    "model": "vit_small_patch4_32_pretrained",
+    "accuracy": 0.9666,
+    "precision": 0.9666565933683346,
+    "recall": 0.9666,
+    "f1": 0.9666162242879113,
+    "params": 21342346,
+    "size_mb": 85.4331,
+    "input_resolution": 32,
+    "patch_size": 4,
+    "num_patches": 64,
+    "attention_type": "standard (full N\u00d7N matrix materialised in HBM)",
+    "inference_ms": {
+      "cpu": {
+        "single_img_ms": 10.4261,
+        "batch128_ms": 646.8713,
+        "per_img_ms": 5.0537,
+        "throughput_imgs_sec": 197.9,
+        "timing_method": "time.perf_counter()"
+      },
+      "gpu": {
+        "single_img_ms": 4.6996,
+        "batch128_ms": 55.1629,
+        "per_img_ms": 0.431,
+        "throughput_imgs_sec": 2320.4,
+        "timing_method": "CUDA events + torch.cuda.synchronize()"
+      }
+    }
+  },
+  "flash_vit": {
+    "model": "vit_small_patch4_32_flash_attention",
+    "accuracy": 0.9666,
+    "precision": 0.9666565933683346,
+    "recall": 0.9666,
+    "f1": 0.9666162242879113,
+    "params": 21342346,
+    "size_mb": 85.4331,
+    "input_resolution": 32,
+    "patch_size": 4,
+    "num_patches": 64,
+    "attention_type": "flash (tiled, IO-aware, no N\u00d7N matrix in HBM)",
+    "inference_ms": {
+      "cpu": {
+        "single_img_ms": 11.7948,
+        "batch128_ms": 738.2786,
+        "per_img_ms": 5.7678,
+        "throughput_imgs_sec": 173.4,
+        "timing_method": "time.perf_counter()"
+      },
+      "gpu": {
+        "single_img_ms": 4.1929,
+        "batch128_ms": 55.1291,
+        "per_img_ms": 0.4307,
+        "throughput_imgs_sec": 2321.8,
+        "timing_method": "CUDA events + torch.cuda.synchronize()"
+      }
+    }
+  },
+  "comparison": {
+    "accuracy_delta": 0.0,
+    "max_logit_diff": 0.0,
+    "mean_logit_diff": 0.0,
+    "speedup_single_img_gpu": 1.1208,
+    "speedup_batch128_gpu": 1.0006,
+    "throughput_gain_pct_gpu": 0.06,
+    "speedup_single_img_cpu": 0.884,
+    "speedup_batch128_cpu": 0.8762,
+    "throughput_gain_pct_cpu": -12.38
+  },
+  "notes": {
+    "orthogonality": "Flash Attention is orthogonal to architecture design. It can be combined with pruning, quantization, distillation, or NAS without any conflict.",
+    "memory_benefit": "Memory savings grow quadratically with sequence length. For N=64 patches (CIFAR-10) the benefit is modest. For larger inputs (N=196 for 224\u00d7224) the gain is substantial.",
+    "speedup_note": "Speedup depends on hardware (Ampere GPU sees most benefit), sequence length (longer \u2192 more gain), and batch size."
+  }
+}

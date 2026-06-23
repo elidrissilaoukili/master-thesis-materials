@@ -1,0 +1,490 @@
+{
+  "method": "nas_efficient_operators",
+  "description": "DARTS cell-based NAS (pure PyTorch, no NNI) + MobileNetV1-style Depthwise-Separable network. Both designed and trained FROM SCRATCH on CIFAR-10. Baseline ResNet-50 is the comparison reference only.",
+  "approach": "design_from_scratch",
+  "key_principle": "Unlike pruning / quantization / distillation which compress an existing model, NAS and Efficient Operators design new inherently efficient architectures from the ground up. The baseline ResNet-50 is NEVER modified or reused here.",
+  "saved_models": {
+    "darts_discrete": "saved_models\\darts_discrete.pth",
+    "mobilenet_wm05": "saved_models\\mobilenet_wm05.pth",
+    "mobilenet_wm10": "saved_models\\mobilenet_wm10.pth"
+  },
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.59566,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "inference_ms_cpu": {
+      "single_img_cpu_ms": 24.4475,
+      "batch128_cpu_ms": 1152.8638,
+      "per_img_cpu_ms": 9.0067,
+      "throughput_imgs_sec": 111.0,
+      "timing_method": "time.perf_counter()"
+    },
+    "params_M": 23.5208,
+    "size_disk_mb": 90.0294
+  },
+  "hyperparams": {
+    "darts": {
+      "C": 16,
+      "num_cells": 8,
+      "num_nodes": 4,
+      "search_epochs": 30,
+      "search_subset": 10000,
+      "lr_weights": 0.0003,
+      "lr_arch": 0.0003,
+      "arch_wd": 0.001
+    },
+    "training": {
+      "epochs": 100,
+      "lr": 0.025,
+      "momentum": 0.9,
+      "weight_decay": 0.0003,
+      "scheduler": "cosine_annealing",
+      "init": "random (from scratch -- zero baseline weights)"
+    }
+  },
+  "results": {
+    "darts_nas": {
+      "label": "DARTS NAS",
+      "accuracy": 0.9087,
+      "precision": 0.908697,
+      "recall": 0.9087,
+      "f1": 0.908508,
+      "accuracy_drop": 0.0233,
+      "params": 225338,
+      "params_M": 0.2253,
+      "flops_G": 0.173306,
+      "size_disk_mb": 1.2291,
+      "inference_ms": {
+        "cpu": {
+          "single_img_ms": 54.607,
+          "batch128_ms": 300.8721,
+          "per_img_ms": 2.3506,
+          "throughput_imgs_sec": 425.4,
+          "timing_method": "time.perf_counter()"
+        },
+        "gpu": {
+          "single_img_ms": 56.0053,
+          "batch128_ms": 60.9371,
+          "per_img_ms": 0.4761,
+          "throughput_imgs_sec": 2100.5,
+          "timing_method": "single: cuda.synchronize()+perf_counter | batch: CUDA events"
+        }
+      },
+      "search_epochs": 30,
+      "train_epochs": 100,
+      "search_C": 16,
+      "search_num_cells": 8,
+      "search_num_nodes": 4,
+      "search_space": [
+        "skip",
+        "avg_pool_3x3",
+        "max_pool_3x3",
+        "sep_conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_1x1"
+      ],
+      "searched_normal_ops": [
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3"
+      ],
+      "searched_reduction_ops": [
+        "avg_pool_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "conv_3x3",
+        "sep_conv_3x3",
+        "conv_3x3",
+        "conv_1x1",
+        "conv_3x3",
+        "dil_conv_3x3",
+        "conv_3x3"
+      ],
+      "alpha_probs": {
+        "normal": [
+          {
+            "skip": 0.1329,
+            "avg_pool_3x3": 0.1358,
+            "max_pool_3x3": 0.1462,
+            "sep_conv_3x3": 0.14,
+            "dil_conv_3x3": 0.1469,
+            "conv_3x3": 0.1546,
+            "conv_1x1": 0.1436
+          },
+          {
+            "skip": 0.1344,
+            "avg_pool_3x3": 0.1348,
+            "max_pool_3x3": 0.1417,
+            "sep_conv_3x3": 0.1473,
+            "dil_conv_3x3": 0.1412,
+            "conv_3x3": 0.1613,
+            "conv_1x1": 0.1391
+          },
+          {
+            "skip": 0.1318,
+            "avg_pool_3x3": 0.1346,
+            "max_pool_3x3": 0.144,
+            "sep_conv_3x3": 0.1415,
+            "dil_conv_3x3": 0.1494,
+            "conv_3x3": 0.1506,
+            "conv_1x1": 0.1481
+          },
+          {
+            "skip": 0.1286,
+            "avg_pool_3x3": 0.1303,
+            "max_pool_3x3": 0.1451,
+            "sep_conv_3x3": 0.1501,
+            "dil_conv_3x3": 0.1479,
+            "conv_3x3": 0.1535,
+            "conv_1x1": 0.1445
+          },
+          {
+            "skip": 0.129,
+            "avg_pool_3x3": 0.1314,
+            "max_pool_3x3": 0.1433,
+            "sep_conv_3x3": 0.1497,
+            "dil_conv_3x3": 0.1544,
+            "conv_3x3": 0.1489,
+            "conv_1x1": 0.1433
+          },
+          {
+            "skip": 0.1269,
+            "avg_pool_3x3": 0.1297,
+            "max_pool_3x3": 0.1371,
+            "sep_conv_3x3": 0.1469,
+            "dil_conv_3x3": 0.1547,
+            "conv_3x3": 0.1587,
+            "conv_1x1": 0.146
+          },
+          {
+            "skip": 0.1304,
+            "avg_pool_3x3": 0.1321,
+            "max_pool_3x3": 0.141,
+            "sep_conv_3x3": 0.1513,
+            "dil_conv_3x3": 0.1434,
+            "conv_3x3": 0.1549,
+            "conv_1x1": 0.1468
+          },
+          {
+            "skip": 0.1295,
+            "avg_pool_3x3": 0.1316,
+            "max_pool_3x3": 0.1402,
+            "sep_conv_3x3": 0.1471,
+            "dil_conv_3x3": 0.1584,
+            "conv_3x3": 0.1517,
+            "conv_1x1": 0.1416
+          },
+          {
+            "skip": 0.1277,
+            "avg_pool_3x3": 0.1296,
+            "max_pool_3x3": 0.1423,
+            "sep_conv_3x3": 0.1504,
+            "dil_conv_3x3": 0.1571,
+            "conv_3x3": 0.1537,
+            "conv_1x1": 0.1392
+          },
+          {
+            "skip": 0.1299,
+            "avg_pool_3x3": 0.1292,
+            "max_pool_3x3": 0.1339,
+            "sep_conv_3x3": 0.1465,
+            "dil_conv_3x3": 0.1594,
+            "conv_3x3": 0.1633,
+            "conv_1x1": 0.1378
+          },
+          {
+            "skip": 0.137,
+            "avg_pool_3x3": 0.1352,
+            "max_pool_3x3": 0.1395,
+            "sep_conv_3x3": 0.1434,
+            "dil_conv_3x3": 0.1476,
+            "conv_3x3": 0.1538,
+            "conv_1x1": 0.1435
+          },
+          {
+            "skip": 0.1321,
+            "avg_pool_3x3": 0.1323,
+            "max_pool_3x3": 0.1416,
+            "sep_conv_3x3": 0.1433,
+            "dil_conv_3x3": 0.1492,
+            "conv_3x3": 0.1579,
+            "conv_1x1": 0.1435
+          },
+          {
+            "skip": 0.1299,
+            "avg_pool_3x3": 0.1308,
+            "max_pool_3x3": 0.1403,
+            "sep_conv_3x3": 0.1504,
+            "dil_conv_3x3": 0.1515,
+            "conv_3x3": 0.1552,
+            "conv_1x1": 0.142
+          },
+          {
+            "skip": 0.1319,
+            "avg_pool_3x3": 0.1318,
+            "max_pool_3x3": 0.143,
+            "sep_conv_3x3": 0.147,
+            "dil_conv_3x3": 0.1487,
+            "conv_3x3": 0.1558,
+            "conv_1x1": 0.1418
+          }
+        ],
+        "reduction": [
+          {
+            "skip": 0.1426,
+            "avg_pool_3x3": 0.1456,
+            "max_pool_3x3": 0.1429,
+            "sep_conv_3x3": 0.1357,
+            "dil_conv_3x3": 0.1454,
+            "conv_3x3": 0.1432,
+            "conv_1x1": 0.1447
+          },
+          {
+            "skip": 0.1466,
+            "avg_pool_3x3": 0.1354,
+            "max_pool_3x3": 0.1341,
+            "sep_conv_3x3": 0.1433,
+            "dil_conv_3x3": 0.1486,
+            "conv_3x3": 0.1462,
+            "conv_1x1": 0.1458
+          },
+          {
+            "skip": 0.1442,
+            "avg_pool_3x3": 0.1395,
+            "max_pool_3x3": 0.1386,
+            "sep_conv_3x3": 0.1474,
+            "dil_conv_3x3": 0.1424,
+            "conv_3x3": 0.1478,
+            "conv_1x1": 0.14
+          },
+          {
+            "skip": 0.141,
+            "avg_pool_3x3": 0.1393,
+            "max_pool_3x3": 0.1383,
+            "sep_conv_3x3": 0.1387,
+            "dil_conv_3x3": 0.1533,
+            "conv_3x3": 0.1455,
+            "conv_1x1": 0.1439
+          },
+          {
+            "skip": 0.1345,
+            "avg_pool_3x3": 0.1358,
+            "max_pool_3x3": 0.1372,
+            "sep_conv_3x3": 0.1424,
+            "dil_conv_3x3": 0.1556,
+            "conv_3x3": 0.1519,
+            "conv_1x1": 0.1425
+          },
+          {
+            "skip": 0.1432,
+            "avg_pool_3x3": 0.1407,
+            "max_pool_3x3": 0.1445,
+            "sep_conv_3x3": 0.1435,
+            "dil_conv_3x3": 0.1425,
+            "conv_3x3": 0.1453,
+            "conv_1x1": 0.1403
+          },
+          {
+            "skip": 0.1455,
+            "avg_pool_3x3": 0.1418,
+            "max_pool_3x3": 0.1409,
+            "sep_conv_3x3": 0.1377,
+            "dil_conv_3x3": 0.1459,
+            "conv_3x3": 0.1481,
+            "conv_1x1": 0.1401
+          },
+          {
+            "skip": 0.141,
+            "avg_pool_3x3": 0.1409,
+            "max_pool_3x3": 0.1382,
+            "sep_conv_3x3": 0.1388,
+            "dil_conv_3x3": 0.1432,
+            "conv_3x3": 0.1571,
+            "conv_1x1": 0.1408
+          },
+          {
+            "skip": 0.1373,
+            "avg_pool_3x3": 0.1371,
+            "max_pool_3x3": 0.1406,
+            "sep_conv_3x3": 0.1517,
+            "dil_conv_3x3": 0.1461,
+            "conv_3x3": 0.1487,
+            "conv_1x1": 0.1384
+          },
+          {
+            "skip": 0.1435,
+            "avg_pool_3x3": 0.1373,
+            "max_pool_3x3": 0.1388,
+            "sep_conv_3x3": 0.145,
+            "dil_conv_3x3": 0.1433,
+            "conv_3x3": 0.1497,
+            "conv_1x1": 0.1425
+          },
+          {
+            "skip": 0.1423,
+            "avg_pool_3x3": 0.1405,
+            "max_pool_3x3": 0.1395,
+            "sep_conv_3x3": 0.1405,
+            "dil_conv_3x3": 0.1446,
+            "conv_3x3": 0.1437,
+            "conv_1x1": 0.149
+          },
+          {
+            "skip": 0.1352,
+            "avg_pool_3x3": 0.1359,
+            "max_pool_3x3": 0.1359,
+            "sep_conv_3x3": 0.1455,
+            "dil_conv_3x3": 0.1481,
+            "conv_3x3": 0.1573,
+            "conv_1x1": 0.1422
+          },
+          {
+            "skip": 0.1318,
+            "avg_pool_3x3": 0.1304,
+            "max_pool_3x3": 0.1335,
+            "sep_conv_3x3": 0.1555,
+            "dil_conv_3x3": 0.1574,
+            "conv_3x3": 0.1461,
+            "conv_1x1": 0.1454
+          },
+          {
+            "skip": 0.136,
+            "avg_pool_3x3": 0.1369,
+            "max_pool_3x3": 0.1394,
+            "sep_conv_3x3": 0.1471,
+            "dil_conv_3x3": 0.1437,
+            "conv_3x3": 0.151,
+            "conv_1x1": 0.1459
+          }
+        ]
+      },
+      "total_time_s": 8754.7,
+      "saved_path": "saved_models\\darts_discrete.pth"
+    },
+    "mobilenet_wm05": {
+      "label": "MobileNetV1 wm=0.5",
+      "accuracy": 0.892,
+      "precision": 0.892002,
+      "recall": 0.892,
+      "f1": 0.891941,
+      "accuracy_drop": 0.04,
+      "params": 554922,
+      "params_M": 0.5549,
+      "flops_G": 0.025401,
+      "size_disk_mb": 2.1995,
+      "inference_ms": {
+        "cpu": {
+          "single_img_ms": 8.4806,
+          "batch128_ms": 38.0178,
+          "per_img_ms": 0.297,
+          "throughput_imgs_sec": 3366.8,
+          "timing_method": "time.perf_counter()"
+        },
+        "gpu": {
+          "single_img_ms": 3.934,
+          "batch128_ms": 4.384,
+          "per_img_ms": 0.0343,
+          "throughput_imgs_sec": 29197.0,
+          "timing_method": "single: cuda.synchronize()+perf_counter | batch: CUDA events"
+        }
+      },
+      "train_epochs": 100,
+      "width_mult": 0.5,
+      "total_time_s": 1298.5,
+      "design": "All DW-Sep convolutions, built from scratch",
+      "flops_formula": "(K2*C_in + C_in*C_out)*H*W per block",
+      "saved_path": "saved_models\\mobilenet_wm05.pth"
+    },
+    "mobilenet_wm10": {
+      "label": "MobileNetV1 wm=1.0",
+      "accuracy": 0.9112,
+      "precision": 0.911057,
+      "recall": 0.9112,
+      "f1": 0.91109,
+      "accuracy_drop": 0.0208,
+      "params": 2155338,
+      "params_M": 2.1553,
+      "flops_G": 0.09694,
+      "size_disk_mb": 8.3386,
+      "inference_ms": {
+        "cpu": {
+          "single_img_ms": 9.3942,
+          "batch128_ms": 84.7788,
+          "per_img_ms": 0.6623,
+          "throughput_imgs_sec": 1509.8,
+          "timing_method": "time.perf_counter()"
+        },
+        "gpu": {
+          "single_img_ms": 6.1595,
+          "batch128_ms": 5.4953,
+          "per_img_ms": 0.0429,
+          "throughput_imgs_sec": 23292.7,
+          "timing_method": "single: cuda.synchronize()+perf_counter | batch: CUDA events"
+        }
+      },
+      "train_epochs": 100,
+      "width_mult": 1.0,
+      "total_time_s": 1368.7,
+      "design": "All DW-Sep convolutions, built from scratch",
+      "flops_formula": "(K2*C_in + C_in*C_out)*H*W per block",
+      "saved_path": "saved_models\\mobilenet_wm10.pth"
+    }
+  },
+  "comparison_vs_baseline": {
+    "darts_nas": {
+      "accuracy_drop": 0.0233,
+      "params_reduction": 0.9904,
+      "flops_reduction": 0.9332,
+      "disk_size_reduction": 0.9863
+    },
+    "mobilenet_wm05": {
+      "accuracy_drop": 0.04,
+      "params_reduction": 0.9764,
+      "flops_reduction": 0.9902,
+      "disk_size_reduction": 0.9756
+    },
+    "mobilenet_wm10": {
+      "accuracy_drop": 0.0208,
+      "params_reduction": 0.9084,
+      "flops_reduction": 0.9627,
+      "disk_size_reduction": 0.9074
+    }
+  },
+  "notes": {
+    "nas": "Pure-PyTorch DARTS bilevel search. No NNI dependency.",
+    "search_space": "7 ops x 4 nodes x 8 cells",
+    "mobilenet": "MobileNetV1 DW-Sep blocks, width_mult=0.5 and 1.0 variants.",
+    "flops": "FLOPs = 2 x MACs via forward hooks on Conv2d + Linear.",
+    "from_scratch": "No baseline weights used. All models randomly initialised.",
+    "timing_protocol": "CPU: single (warmup=10, reps=100) + batch-128 (warmup=5, reps=20) via time.perf_counter(). GPU single: warmup=50, reps=500, cuda.synchronize()+perf_counter. GPU batch-128: warmup=10, reps=100, CUDA events.",
+    "dw_sep_complexity": "Standard conv: K2*C_in*C_out*H*W. DW-Sep: (K2*C_in + C_in*C_out)*H*W. Ratio: 1/C_out + 1/K2 ~ 8-9x fewer for K=3.",
+    "model_loading": "To reload DARTS: build DARTSDiscreteNet with the same normal_ops/reduction_ops from alpha_probs in this JSON, then load_state_dict(torch.load('saved_models/darts_discrete.pth')). To reload MobileNet: build MobileNetV1CIFAR(width_mult=...) then load_state_dict(torch.load('saved_models/mobilenet_wm*.pth'))."
+  }
+}

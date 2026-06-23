@@ -1,0 +1,10 @@
+{
+  "accuracy": 0.9289,
+  "precision": 0.9289,
+  "recall": 0.9288,
+  "f1": 0.9289,
+  "params": 109483778,
+  "size_mb": 438.0,
+  "flops_G": 50.7343,
+  "inference_ms": 25.359
+}

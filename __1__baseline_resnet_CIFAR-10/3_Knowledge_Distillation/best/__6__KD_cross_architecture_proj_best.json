@@ -1,0 +1,105 @@
+{
+  "method": "cross_architecture_kd_projection_best",
+  "description": "Cross-Arch KD ResNet-50\u2192MobileNetV2: projection, proj_dim=64, beta=1.0, tau=4.0, epochs=10",
+  "teacher_arch": "ResNet-50 (CIFAR-10 modified)",
+  "student_arch": "MobileNetV2 (CIFAR-10 modified)",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "use_amp": true,
+  "kd_epochs": 10,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.3481,
+      "batch128_gpu_ms": 51.1816,
+      "per_img_gpu_ms": 0.3999,
+      "throughput_imgs_sec": 2500.9,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "teacher_info": {
+    "size_mb": 90.0294,
+    "params_nonzero": 23520842
+  },
+  "student_info": {
+    "size_mb": 8.7626,
+    "params_nonzero": 2219626,
+    "compression_ratio": 10.6
+  },
+  "result": {
+    "sweep": "best_config",
+    "method": "projection",
+    "temperature": 4.0,
+    "alpha": 0.1,
+    "beta": 1.0,
+    "gamma": 0.5,
+    "proj_dim": 64,
+    "proj_temp": 0.07,
+    "lr": 0.01,
+    "lr_schedule": "cosine",
+    "epochs": 10,
+    "train_device": "cuda",
+    "use_amp": true,
+    "train_time_s": 249.83,
+    "epoch_train_acc": [
+      0.33078,
+      0.46872,
+      0.53824,
+      0.58882,
+      0.63012,
+      0.66174,
+      0.68292,
+      0.69866,
+      0.7128,
+      0.72006
+    ],
+    "epoch_align_loss": [
+      0.017458,
+      0.010622,
+      0.00935,
+      0.008529,
+      0.007929,
+      0.007447,
+      0.007146,
+      0.006955,
+      0.006803,
+      0.006756
+    ],
+    "epoch_cka": [
+      0.3963,
+      0.4478,
+      0.5108,
+      0.5395,
+      0.55,
+      0.5994,
+      0.6013,
+      0.5855,
+      0.5935,
+      0.5985
+    ],
+    "accuracy": 0.7227,
+    "precision": 0.719126,
+    "recall": 0.7227,
+    "f1": 0.719578,
+    "accuracy_drop": 0.2093,
+    "params_nonzero": 2236682,
+    "size_mb": 8.7668,
+    "flops_G": 0.0533,
+    "inference_ms": {
+      "single_img_gpu_ms": 3.7824,
+      "batch128_gpu_ms": 6.3093,
+      "per_img_gpu_ms": 0.0493,
+      "throughput_imgs_sec": 20287.7,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    },
+    "peak_gpu_memory_mb": 625.16,
+    "description": "Cross-Arch KD ResNet50\u2192MobileNetV2 (projection, proj_dim=64, beta=1.0, tau=4.0, epochs=10)",
+    "status": "ok"
+  }
+}

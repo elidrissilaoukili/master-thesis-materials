@@ -1,0 +1,124 @@
+{
+  "method": "early_exit",
+  "variant": "BranchyViT_Small",
+  "dataset": "CIFAR-10",
+  "accuracy": 0.9606,
+  "precision": 0.960611,
+  "recall": 0.9606,
+  "f1": 0.960588,
+  "params": 21445022,
+  "size_mb": 81.867,
+  "flops_G": 0.045036,
+  "inference_ms": {
+    "single_img_ms": 6.0981,
+    "batch128_ms": 53.955,
+    "per_img_ms": 0.421524,
+    "throughput_imgs_sec": 2372.35,
+    "timing_method": "CUDA events"
+  },
+  "num_exits": 3,
+  "exit_positions": [
+    "after block 3 of 11 (~33% depth)",
+    "after block 7 of 11 (~67% depth)",
+    "final head (full depth)"
+  ],
+  "branch_weights": [
+    0.2,
+    0.3,
+    0.5
+  ],
+  "exit_thresholds_tested": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "inference_ms_adaptive_tau08": 5.9652,
+  "adaptive_threshold_results": [
+    {
+      "threshold": 0.5,
+      "accuracy": 0.9232,
+      "precision": 0.923139,
+      "recall": 0.9232,
+      "f1": 0.923119,
+      "frac_exit1": 0.9409,
+      "frac_exit2": 0.053,
+      "frac_exit3": 0.0061,
+      "avg_time_ms": 0.3622
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.9356,
+      "precision": 0.935491,
+      "recall": 0.9356,
+      "f1": 0.935499,
+      "frac_exit1": 0.8968,
+      "frac_exit2": 0.0867,
+      "frac_exit3": 0.0165,
+      "avg_time_ms": 0.3567
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.9455,
+      "precision": 0.945434,
+      "recall": 0.9455,
+      "f1": 0.945442,
+      "frac_exit1": 0.8517,
+      "frac_exit2": 0.1174,
+      "frac_exit3": 0.0309,
+      "avg_time_ms": 0.3673
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.9534,
+      "precision": 0.953391,
+      "recall": 0.9534,
+      "f1": 0.95337,
+      "frac_exit1": 0.7801,
+      "frac_exit2": 0.1616,
+      "frac_exit3": 0.0583,
+      "avg_time_ms": 0.3713
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.9595,
+      "precision": 0.959478,
+      "recall": 0.9595,
+      "f1": 0.959474,
+      "frac_exit1": 0.5763,
+      "frac_exit2": 0.2729,
+      "frac_exit3": 0.1508,
+      "avg_time_ms": 0.4149
+    },
+    {
+      "threshold": 0.95,
+      "accuracy": 0.9606,
+      "precision": 0.960611,
+      "recall": 0.9606,
+      "f1": 0.960588,
+      "frac_exit1": 0.0802,
+      "frac_exit2": 0.003,
+      "frac_exit3": 0.9168,
+      "avg_time_ms": 0.5626
+    }
+  ],
+  "best_adaptive_result": {
+    "threshold": 0.95,
+    "accuracy": 0.9606,
+    "precision": 0.960611,
+    "recall": 0.9606,
+    "f1": 0.960588,
+    "frac_exit1": 0.0802,
+    "frac_exit2": 0.003,
+    "frac_exit3": 0.9168,
+    "avg_time_ms": 0.5626
+  },
+  "input_resolution": 32,
+  "patch_size": 4,
+  "num_patches": 64,
+  "original_arch": "vit_small_patch16_224",
+  "init_strategy": "ImageNet-pretrained backbone, jointly trained (no fine-tune from baseline checkpoint)",
+  "saved_model_path": "e:\\baseline_ViT\\__3__early_exist_FIXED\\__5__branchynet_vit_cifar10_fixed.pth"
+}

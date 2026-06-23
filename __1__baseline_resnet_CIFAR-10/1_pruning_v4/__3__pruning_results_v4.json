@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "framework": "PFE Pruning Experiments v4",
+    "baseline_pth": "../__2__baseline_resnet50_cifar10.pth",
+    "sparsity_target": 0.5,
+    "channel_prune_ratio": 0.3,
+    "device": "cuda",
+    "seed": 42,
+    "lth_train_epochs": 30,
+    "lth_retrain_epochs": 30,
+    "taxonomy": {
+      "mask_based": [
+        "1_unstructured",
+        "3_magnitude",
+        "4_taylor_sensitivity",
+        "6_iterative",
+        "7_one_shot"
+      ],
+      "architecture_changing": [
+        "2_structured"
+      ],
+      "rewind_based": [
+        "5_lottery_ticket"
+      ]
+    },
+    "method_distinctions": {
+      "1_vs_7": "Method 1 (unstructured): global threshold \u2014 single cutoff across all layers. Method 7 (one-shot): layer-wise threshold \u2014 each layer independently pruned. Both are single-pass with no fine-tuning. The distinction is global vs per-layer thresholding.",
+      "3_vs_7": "Method 3 (magnitude): per-layer L1 WITH fine-tuning context. Method 7 (one-shot): per-layer L1, NO fine-tuning, immediate deploy. Method 7 quantifies the accuracy cost of skipping recovery training."
+    },
+    "fixes_from_v3": {
+      "FIX_1_method1_vs_7": "One-shot (#7) now uses layer-wise (not global) thresholding, making it genuinely distinct from global unstructured (#1).",
+      "FIX_2_iterative_sparsity": "make_permanent() moved outside the pruning loop. Mask buffers now accumulate correctly across rounds, reaching target sparsity.",
+      "FIX_3_movement_rename": "Renamed to 'Taylor Sensitivity Pruning' (Molchanov et al. 2017). Movement pruning (Sanh 2020) is a different algorithm.",
+      "FIX_4_lth_mask_coverage": "LTH mask now covers all learnable params including BN affine. Only running stats (running_mean, running_var) are excluded."
+    },
+    "flops_interpretation": "Mask-based: dense FLOPs unchanged (graph unmodified). Effective FLOPs depend on sparse-backend support. Structured (#2): GFLOPs genuinely reduced \u2014 measured on rebuilt model. Comparison across types is NOT apples-to-apples for FLOPs; this is disclosed in the taxonomy.",
+    "structured_pruning_safety": "Only internal Bottleneck width (conv1\u2192conv2) is pruned. conv3, bn3, and downsample paths are untouched, guaranteeing residual-addition shape safety in all blocks.",
+    "taylor_sensitivity_method": "Importance = (1/N) \u03a3 |\u2202L/\u2202w \u00d7 w| over N batches. Normalized to remove large-tensor bias. Ref: Molchanov et al. 2017.",
+    "lth_protocol": "\u03b8\u2080 saved at SEED=42 before training. \u03b8_T = result of training \u03b8\u2080 in this script (same trajectory). Mask from global magnitude pruning of \u03b8_T \u2014 covers ALL learnable params. Ticket = m \u2299 \u03b8\u2080 retrained with frozen mask. Ref: Frankle & Carlin 2019."
+  },
+  "results": {
+    "1_unstructured": {
+      "accuracy": 0.932,
+      "precision": 0.9318602516928074,
+      "recall": 0.9319999999999998,
+      "f1": 0.9318784125744781,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 4.922157923380534,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse)."
+    },
+    "2_structured": {
+      "accuracy": 0.9349,
+      "precision": 0.9352088597334351,
+      "recall": 0.9348999999999998,
+      "f1": 0.9349216164621129,
+      "params_total": 18807394,
+      "params_nonzero": 18807394,
+      "sparsity_actual": 0.0,
+      "size_mb": 75.523059,
+      "flops_G": 2.068770816,
+      "inference_ms": 25.07247527440389,
+      "flops_note": "TRUE structured pruning: 30% of internal Bottleneck channels physically removed (conv1+bn1+conv2 per block). conv3, bn3, and downsample are untouched \u2014 residual shapes guaranteed valid. GFLOPs are genuinely reduced and measured by thop on the rebuilt model."
+    },
+    "3_magnitude": {
+      "accuracy": 0.9318,
+      "precision": 0.931472632848388,
+      "recall": 0.9318,
+      "f1": 0.9315545218036515,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 21.53262694676717,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse)."
+    },
+    "4_taylor_sensitivity": {
+      "accuracy": 0.8898,
+      "precision": 0.8972048130542241,
+      "recall": 0.8897999999999999,
+      "f1": 0.8910005223868728,
+      "params_total": 23520842,
+      "params_nonzero": 11605117,
+      "sparsity_actual": 0.506602824847852,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 19.66347058614095,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse).",
+      "method_note": "Taylor first-order sensitivity pruning (Molchanov et al. 2017). Importance = (1/N) \u03a3 |\u2202L/\u2202w \u00d7 w| over N batches. Normalized to remove large-tensor bias. NOT to be confused with movement pruning (Sanh et al. 2020), which accumulates weight displacement from zero during training."
+    },
+    "5_lottery_ticket": {
+      "accuracy": 0.9276,
+      "precision": 0.9277131716489475,
+      "recall": 0.9276,
+      "f1": 0.927617443280113,
+      "params_total": 23520842,
+      "params_nonzero": 11760395,
+      "sparsity_actual": 0.5000011054026042,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 27.48547951380412,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse).",
+      "lth_note": "Correct LTH protocol (Frankle & Carlin 2019). \u03b8\u2080 saved at SEED=42 before any training. \u03b8_T obtained by training \u03b8\u2080 for 30 epochs in this run. Global magnitude mask at 50% sparsity applied to \u03b8_T. Mask covers ALL learnable parameters (conv, linear, BN affine). Winning ticket = m \u2299 \u03b8\u2080 retrained for 30 epochs with mask enforced after every gradient step."
+    },
+    "6_iterative": {
+      "accuracy": 0.9324,
+      "precision": 0.9322134607440837,
+      "recall": 0.9324,
+      "f1": 0.9322088169377374,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 32.14343070983887,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse).",
+      "method_note": "3 rounds of global L1 pruning + fine-tuning. Per-round sparsity increment: 0.2063 (compounds to 50%). Mask buffers kept alive across rounds (make_permanent called once after loop). Fine-tune LR schedule: 1e-3 \u00d7 0.5^round per round."
+    },
+    "7_one_shot": {
+      "accuracy": 0.9318,
+      "precision": 0.931472632848388,
+      "recall": 0.9318,
+      "f1": 0.9315545218036515,
+      "params_total": 23520842,
+      "params_nonzero": 11786986,
+      "sparsity_actual": 0.49887057614689134,
+      "size_mb": 94.383667,
+      "flops_G": 2.623188992,
+      "inference_ms": 17.249182065327965,
+      "flops_note": "Mask-based pruning \u2014 computation graph is structurally unchanged. Dense FLOPs are identical to baseline. Effective FLOPs depend on sparse-kernel backend support (e.g. DeepSparse).",
+      "method_note": "Layer-wise L1 one-shot pruning. Each layer pruned independently to 50% sparsity in a single pass with no recovery fine-tuning. Distinguishable from Method 1 (global threshold) by the per-layer thresholding strategy; identical to Method 3 in pruning criterion but included as a baseline to quantify the cost of omitting fine-tuning."
+    }
+  }
+}

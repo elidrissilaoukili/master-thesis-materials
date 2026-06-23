@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "method": "post_training_quantization_v2",
+    "description": "Three quantization tracks for fair cross-method comparison. Track A: CPU INT8 (torch.ao) \u2014 matches existing PTQ script. Track B: GPU INT8 (bitsandbytes) \u2014 GPU timing comparable to pruning. Track C: GPU FP16 (torch.half) \u2014 no library, 2x memory reduction.",
+    "comparison_guide": {
+      "vs_pruning_inference_ms": "Use Track B or C gpu_ms values to compare with pruning. Track A cpu_ms must NOT be compared with GPU pruning times.",
+      "vs_pruning_size_mb": "All tracks: size_mb is the real .pth file size on disk. Directly comparable to pruning size_mb values.",
+      "fair_comparison_table": "Columns: method | device | dtype | acc | size_mb | inference_ms. Only compare inference_ms within same device column."
+    },
+    "device_gpu": "cuda",
+    "bnb_version": "not installed"
+  },
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969,
+    "inference_gpu_ms": 5.4012,
+    "inference_cpu_ms": 17.9307
+  },
+  "results": {
+    "track_A_cpu_int8": {
+      "track": "A",
+      "method": "CPU PTQ (torch.ao histogram)",
+      "device": "cpu",
+      "dtype": "INT8 (weights + activations)",
+      "accuracy": 0.9315,
+      "precision": 0.931404,
+      "recall": 0.9315,
+      "f1": 0.931391,
+      "accuracy_drop": 0.0005,
+      "size_mb": 24.106,
+      "inference_cpu_ms": 51.3015,
+      "inference_gpu_ms": null,
+      "timing_note": "CPU timing only. PyTorch torch.ao quantization does not support CUDA execution. Do NOT compare this ms value directly with GPU pruning inference times \u2014 they measure different hardware."
+    },
+    "track_B_gpu_int8": null,
+    "track_C_gpu_fp16": {
+      "track": "C",
+      "method": "GPU FP16 (.half())",
+      "device": "cuda",
+      "dtype": "float16 (all layers)",
+      "accuracy": 0.9319,
+      "precision": 0.931761,
+      "recall": 0.9319,
+      "f1": 0.931784,
+      "accuracy_drop": 0.0001,
+      "size_mb": 47.255,
+      "inference_cpu_ms": null,
+      "inference_gpu_ms": 57.0527,
+      "timing_note": "FP16 is not INT8 quantization but is a standard precision reduction technique. No calibration required. 2\u00d7 memory vs FP32. GPU timing comparable to pruning benchmarks."
+    }
+  }
+}

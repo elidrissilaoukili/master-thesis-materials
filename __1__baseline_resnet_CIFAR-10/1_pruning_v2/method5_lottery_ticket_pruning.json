@@ -1,0 +1,87 @@
+{
+  "method": "lottery_ticket_hypothesis",
+  "description": "LTH: iterative magnitude pruning to find ticket mask. Primary metrics are for the winning ticket (trained weights \u00d7 mask). random_init_accuracy and lth_advantage_pct are LTH-specific extras.",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "results": [
+    {
+      "sparsity": 0.3,
+      "iterative_rounds": 5,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 183.4427,
+      "flops": 2623188992,
+      "random_init_accuracy": 0.1,
+      "lth_advantage_pct": 83.21
+    },
+    {
+      "sparsity": 0.5,
+      "iterative_rounds": 5,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 94.8195,
+      "flops": 2623188992,
+      "random_init_accuracy": 0.0963,
+      "lth_advantage_pct": 83.58
+    },
+    {
+      "sparsity": 0.7,
+      "iterative_rounds": 5,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 119.5599,
+      "flops": 2623188992,
+      "random_init_accuracy": 0.1,
+      "lth_advantage_pct": 83.21
+    },
+    {
+      "sparsity": 0.8,
+      "iterative_rounds": 5,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 92.9638,
+      "flops": 2623188992,
+      "random_init_accuracy": 0.1162,
+      "lth_advantage_pct": 81.59
+    },
+    {
+      "sparsity": 0.9,
+      "iterative_rounds": 5,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 122.8649,
+      "flops": 2623188992,
+      "random_init_accuracy": 0.1,
+      "lth_advantage_pct": 83.21
+    }
+  ]
+}

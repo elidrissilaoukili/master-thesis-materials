@@ -1,0 +1,55 @@
+{
+  "method": "magnitude_pruning",
+  "description": "Per-layer magnitude pruning comparing L1-local, L2-local, and global-L1",
+  "pruning_granularity": "weight (unstructured)",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "pruning_criteria": [
+    "local_l1 (per-layer L1)",
+    "local_l2 (per-layer L2^2)",
+    "global_l1 (all layers ranked together)"
+  ],
+  "device": "cuda",
+  "max_acc_drop_threshold": 0.02,
+  "best_config": {
+    "sparsity": 0.3,
+    "criterion": "global_l1"
+  },
+  "results": [
+    {
+      "target_sparsity": 0.3,
+      "criterion": "global_l1",
+      "actual_sparsity": 0.3,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "accuracy_drop": -0.0001,
+      "params_total": 23520842,
+      "params_active": 16480528,
+      "size_sparse_theoretical_mb": 62.8682,
+      "size_disk_mb": 90.0395,
+      "disk_saved_mb": -0.0101,
+      "inference_gpu_ms": 51.0743,
+      "inference_cpu_ms": 3217.8587,
+      "flops_total": 2623188992,
+      "flops_active": 2623188992,
+      "flops_reduction_pct": 0.0
+    }
+  ],
+  "notes": {
+    "local_l1": "Each layer independently pruned to target sparsity \u2014 uniform compression",
+    "local_l2": "Each layer pruned by L2^2 score \u2014 prefers keeping large-magnitude weights",
+    "global_l1": "All layers ranked together \u2014 important layers auto-protected",
+    "comparison_insight": "Global L1 typically outperforms local methods at high sparsity"
+  }
+}

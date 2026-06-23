@@ -1,0 +1,94 @@
+{
+  "ptq_dynamic_int8": {
+    "accuracy": 0.0921,
+    "precision": 0.047177580029345675,
+    "recall": 0.0921,
+    "f1": 0.06096209057251989,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "sparsity_actual": 0.0,
+    "size_mb": 94.339203,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_ms": 4.7753,
+      "batch128_ms": 51.233,
+      "per_img_ms": 0.4003,
+      "throughput_imgs_sec": 2498.4,
+      "timing_method": "CUDA events + synchronize"
+    },
+    "model_type": "torch_gpu"
+  },
+  "ptq_onnx_minmax": {
+    "accuracy": 0.9319,
+    "precision": 0.9318267471028949,
+    "recall": 0.9319000000000001,
+    "f1": 0.9317935338366443,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "sparsity_actual": 0.0,
+    "size_mb": 94.556563,
+    "flops_G": 2.623,
+    "inference_ms": {
+      "single_img_ms": null,
+      "batch128_ms": 63.808,
+      "per_img_ms": 0.4985,
+      "throughput_imgs_sec": 2006.0,
+      "timing_method": "wall-clock time.perf_counter (ORT)"
+    },
+    "model_type": "onnx"
+  },
+  "ptq_onnx_entropy": {
+    "accuracy": 0.9319,
+    "precision": 0.9318267471028949,
+    "recall": 0.9319000000000001,
+    "f1": 0.9317935338366443,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "sparsity_actual": 0.0,
+    "size_mb": 94.556563,
+    "flops_G": 2.623,
+    "inference_ms": {
+      "single_img_ms": null,
+      "batch128_ms": 63.8454,
+      "per_img_ms": 0.4988,
+      "throughput_imgs_sec": 2004.8,
+      "timing_method": "wall-clock time.perf_counter (ORT)"
+    },
+    "model_type": "onnx"
+  },
+  "ptq_onnx_percentile": {
+    "accuracy": 0.9316,
+    "precision": 0.931510373960647,
+    "recall": 0.9315999999999999,
+    "f1": 0.9314937759876425,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "sparsity_actual": 0.0,
+    "size_mb": 94.556576,
+    "flops_G": 2.623,
+    "inference_ms": {
+      "single_img_ms": null,
+      "batch128_ms": 64.0587,
+      "per_img_ms": 0.5005,
+      "throughput_imgs_sec": 1998.2,
+      "timing_method": "wall-clock time.perf_counter (ORT)"
+    },
+    "model_type": "onnx"
+  },
+  "qat_minmax_constant": {
+    "status": "failed",
+    "error": "unsupported format string passed to NoneType.__format__"
+  },
+  "qat_minmax_cosine": {
+    "status": "failed",
+    "error": "unsupported format string passed to NoneType.__format__"
+  },
+  "qat_minmax_step": {
+    "status": "failed",
+    "error": "unsupported format string passed to NoneType.__format__"
+  },
+  "qat_moving_avg_constant": {
+    "status": "failed",
+    "error": "unsupported format string passed to NoneType.__format__"
+  }
+}

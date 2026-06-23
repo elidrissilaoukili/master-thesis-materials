@@ -1,0 +1,90 @@
+{
+  "minmax_constant": {
+    "accuracy": 0.9317,
+    "precision": 0.931786,
+    "recall": 0.9317,
+    "f1": 0.931678,
+    "params": 23520842,
+    "size_mb": 22.989696,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 182.1943,
+      "batch128_cpu_ms": 471.3821,
+      "per_img_cpu_ms": 3.6827,
+      "throughput_imgs_sec": 271.5,
+      "timing_method": "wall-clock (time.perf_counter), CPU"
+    },
+    "train_time_s": 394.85,
+    "epoch_train_acc": [
+      0.98882,
+      0.99052,
+      0.99102
+    ]
+  },
+  "moving_avg_constant": {
+    "accuracy": 0.9279,
+    "precision": 0.928212,
+    "recall": 0.9279,
+    "f1": 0.92792,
+    "params": 23520842,
+    "size_mb": 22.989696,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 177.1078,
+      "batch128_cpu_ms": 464.8182,
+      "per_img_cpu_ms": 3.6314,
+      "throughput_imgs_sec": 275.4,
+      "timing_method": "wall-clock (time.perf_counter), CPU"
+    },
+    "train_time_s": 470.48,
+    "epoch_train_acc": [
+      0.98778,
+      0.99124,
+      0.99092
+    ]
+  },
+  "minmax_cosine": {
+    "accuracy": 0.9315,
+    "precision": 0.93138,
+    "recall": 0.9315,
+    "f1": 0.931337,
+    "params": 23520842,
+    "size_mb": 22.989696,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 178.1182,
+      "batch128_cpu_ms": 460.1403,
+      "per_img_cpu_ms": 3.5948,
+      "throughput_imgs_sec": 278.2,
+      "timing_method": "wall-clock (time.perf_counter), CPU"
+    },
+    "train_time_s": 375.84,
+    "epoch_train_acc": [
+      0.9885,
+      0.99106,
+      0.99086
+    ]
+  },
+  "minmax_step": {
+    "accuracy": 0.9318,
+    "precision": 0.931843,
+    "recall": 0.9318,
+    "f1": 0.931763,
+    "params": 23520842,
+    "size_mb": 22.989696,
+    "flops_G": 2.623188992,
+    "inference_ms": {
+      "single_img_cpu_ms": 89.8176,
+      "batch128_cpu_ms": 226.6553,
+      "per_img_cpu_ms": 1.7707,
+      "throughput_imgs_sec": 564.7,
+      "timing_method": "wall-clock (time.perf_counter), CPU"
+    },
+    "train_time_s": 313.41,
+    "epoch_train_acc": [
+      0.98834,
+      0.9917,
+      0.99142
+    ]
+  }
+}

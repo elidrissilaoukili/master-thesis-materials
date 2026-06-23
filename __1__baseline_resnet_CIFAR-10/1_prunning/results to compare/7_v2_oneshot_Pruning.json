@@ -1,0 +1,55 @@
+{
+  "method": "oneshot_pruning",
+  "description": "One-shot pruning: target sparsity reached in a single step \u2014 no iteration",
+  "pruning_granularity": "weight (unstructured, global)",
+  "variants": [
+    "oneshot_l1_global",
+    "oneshot_l2_global",
+    "oneshot_random"
+  ],
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 1.311594496,
+    "inference_ms": 4.578483581542969
+  },
+  "device": "cuda",
+  "max_acc_drop_threshold": 0.02,
+  "best_config": {
+    "sparsity": 0.3,
+    "variant": "oneshot_l1_global"
+  },
+  "results": [
+    {
+      "target_sparsity": 0.3,
+      "variant": "oneshot_l1_global",
+      "actual_sparsity": 0.3,
+      "accuracy": 0.9321,
+      "precision": 0.931969,
+      "recall": 0.9321,
+      "f1": 0.931987,
+      "accuracy_drop": -0.0001,
+      "params_total": 23520842,
+      "params_active": 16480528,
+      "size_sparse_theoretical_mb": 62.8682,
+      "size_disk_mb": 90.0294,
+      "disk_saved_mb": 0.0,
+      "inference_gpu_ms": 50.7712,
+      "inference_cpu_ms": 3916.0264,
+      "flops_total": 2595659776,
+      "flops_active": 1875850369,
+      "flops_reduction_pct": 27.73
+    }
+  ],
+  "notes": {
+    "oneshot_l1_global": "Global L1 ranking, single pass \u2014 same as unstructured script",
+    "oneshot_l2_global": "Global L2 (squared magnitude) ranking, single pass",
+    "oneshot_random": "Randomly selected weights pruned \u2014 control baseline, worst accuracy",
+    "vs_iterative": "Compare with 6_iterative_Pruning.json to see cost of one-shot vs iterative",
+    "speed": "One-shot is extremely fast \u2014 no loops, single threshold computation"
+  }
+}

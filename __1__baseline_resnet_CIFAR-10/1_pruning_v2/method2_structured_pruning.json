@@ -1,0 +1,72 @@
+{
+  "method": "structured_pruning",
+  "description": "L1 structured filter pruning \u2014 entire Conv2d output filters zeroed (dim=0)",
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "macs_G": 1.311594496,
+    "flops_G": 2.623188992,
+    "inference_ms": 4.578483581542969
+  },
+  "results": [
+    {
+      "filter_pruning_ratio": 0.1,
+      "accuracy": 0.9322,
+      "precision": 0.932111,
+      "recall": 0.9322,
+      "f1": 0.932104,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 104.5889,
+      "flops": 2623188992
+    },
+    {
+      "filter_pruning_ratio": 0.2,
+      "accuracy": 0.931,
+      "precision": 0.931048,
+      "recall": 0.931,
+      "f1": 0.930961,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 103.5771,
+      "flops": 2623188992
+    },
+    {
+      "filter_pruning_ratio": 0.3,
+      "accuracy": 0.9313,
+      "precision": 0.931521,
+      "recall": 0.9313,
+      "f1": 0.931253,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 143.8668,
+      "flops": 2623188992
+    },
+    {
+      "filter_pruning_ratio": 0.4,
+      "accuracy": 0.9227,
+      "precision": 0.923856,
+      "recall": 0.9227,
+      "f1": 0.922834,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 183.8529,
+      "flops": 2623188992
+    },
+    {
+      "filter_pruning_ratio": 0.5,
+      "accuracy": 0.8734,
+      "precision": 0.887076,
+      "recall": 0.8734,
+      "f1": 0.874671,
+      "num_parameters": 23520842,
+      "model_size_mb": 90.0294,
+      "inference_time_ms": 178.4377,
+      "flops": 2623188992
+    }
+  ]
+}

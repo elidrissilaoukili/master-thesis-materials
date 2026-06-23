@@ -1,0 +1,70 @@
+{
+  "fp32_baseline": {
+    "accuracy": 0.932,
+    "precision": 0.931863,
+    "recall": 0.932,
+    "f1": 0.931884,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.050925,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.1844,
+      "batch128_gpu_ms": 51.1156,
+      "per_img_gpu_ms": 0.3993,
+      "throughput_imgs_sec": 2504.1,
+      "timing_method": "CUDA events + torch.cuda.synchronize()"
+    }
+  },
+  "ort_minmax": {
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.176166,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.5794,
+      "batch128_gpu_ms": 64.0464,
+      "per_img_gpu_ms": 0.5004,
+      "throughput_imgs_sec": 1998.6,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 ORT session"
+    }
+  },
+  "ort_entropy": {
+    "accuracy": 0.9319,
+    "precision": 0.931827,
+    "recall": 0.9319,
+    "f1": 0.931794,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.176166,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.35,
+      "batch128_gpu_ms": 63.9184,
+      "per_img_gpu_ms": 0.4994,
+      "throughput_imgs_sec": 2002.6,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 ORT session"
+    }
+  },
+  "ort_percentile": {
+    "accuracy": 0.9316,
+    "precision": 0.93151,
+    "recall": 0.9316,
+    "f1": 0.931494,
+    "params": 23520842,
+    "params_nonzero": 23520842,
+    "size_mb": 90.176178,
+    "flops_G": 2.595659776,
+    "inference_ms": {
+      "single_img_gpu_ms": 4.2014,
+      "batch128_gpu_ms": 63.9383,
+      "per_img_gpu_ms": 0.4995,
+      "throughput_imgs_sec": 2001.9,
+      "timing_method": "wall-clock (time.perf_counter) \u2014 ORT session"
+    }
+  }
+}

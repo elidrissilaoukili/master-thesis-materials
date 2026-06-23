@@ -1,0 +1,27 @@
+[
+    {
+        "text": "This movie was absolutely fantastic, I loved every second of it!",
+        "prediction": "positive",
+        "confidence": 0.9997
+    },
+    {
+        "text": "A complete waste of time. Terrible acting and a boring plot.",
+        "prediction": "negative",
+        "confidence": 0.9994
+    },
+    {
+        "text": "The film had its moments but overall felt quite average.",
+        "prediction": "negative",
+        "confidence": 0.9959
+    },
+    {
+        "text": "One of the best performances I have seen in years.",
+        "prediction": "positive",
+        "confidence": 0.9997
+    },
+    {
+        "text": "I would not recommend this to anyone.",
+        "prediction": "negative",
+        "confidence": 0.9923
+    }
+]

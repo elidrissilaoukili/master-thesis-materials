@@ -1,0 +1,89 @@
+{
+  "experiment": "weight_sharing_hashednets",
+  "method": "weight_sharing",
+  "variant": "HashedNets",
+  "original_arch": "resnet50",
+  "dataset": "CIFAR-10",
+  "train_device": "cuda",
+  "bucket_fraction": 0.25,
+  "hash_seed": 2654435761,
+  "finetune_epochs": 5,
+  "finetune_lr": 0.001,
+  "method_description": "HashedNets: each weight index hashed to one of K=25% buckets via Knuth multiplicative hash h(i)=(SEED*i XOR i) mod K. Shared parameter per bucket; gradients accumulated across all mapped weights.",
+  "compression_time_s": 0.34,
+  "baseline": {
+    "accuracy": 0.932,
+    "precision": 0.9318626541334971,
+    "recall": 0.9319999999999998,
+    "f1": 0.9318835910591599,
+    "params": 23520842,
+    "size_mb": 94.408905,
+    "flops_G": 1.311594496,
+    "inference_ms": 4.578483581542969
+  },
+  "original_size_mb": 90.0294,
+  "original_params": 23520842,
+  "baseline_gflops": 2.6232,
+  "pre_finetune_accuracy": 0.1,
+  "accuracy": 0.6866,
+  "precision": 0.690556,
+  "recall": 0.6866,
+  "f1": 0.686311,
+  "accuracy_drop": 0.2454,
+  "finetune_epoch_accs": [
+    0.31326,
+    0.49542,
+    0.59298,
+    0.65528,
+    0.68134
+  ],
+  "effective_unique_params": 5920058,
+  "param_reduction_pct": 74.83,
+  "size_disk_mb": 201.9483,
+  "compression_ratio": 0.4458,
+  "inference_ms": 52.0483,
+  "gflops": 0.0275,
+  "comparison": {
+    "accuracy": {
+      "baseline": 0.932,
+      "compressed": 0.6866,
+      "delta": -0.2454
+    },
+    "precision": {
+      "baseline": 0.931863,
+      "compressed": 0.690556,
+      "delta": -0.241306
+    },
+    "recall": {
+      "baseline": 0.932,
+      "compressed": 0.6866,
+      "delta": -0.2454
+    },
+    "f1": {
+      "baseline": 0.931884,
+      "compressed": 0.686311,
+      "delta": -0.245572
+    },
+    "num_parameters": {
+      "baseline": 23520842,
+      "compressed": 5920058,
+      "delta": -17600784
+    },
+    "size_mb": {
+      "baseline": 90.0294,
+      "compressed": 201.9483,
+      "delta": 111.9189
+    },
+    "inference_ms": {
+      "baseline": 4.5785,
+      "compressed": 52.0483,
+      "delta": 47.4698
+    },
+    "gflops": {
+      "baseline": 2.6232,
+      "compressed": 0.0275,
+      "delta": -2.5957
+    }
+  },
+  "status": "ok"
+}
